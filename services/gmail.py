@@ -19,8 +19,6 @@ class Gmail():
       token_uri='https://oauth2.googleapis.com/token'
     )
     
-    print(f"CLIENT_ID: {self.secrets['GOOGLE_CLIENT_ID'][:20]}") 
-    
     if not credentials.valid:
       print("No valid credentials found, refreshing..")
       credentials.refresh(Request())
