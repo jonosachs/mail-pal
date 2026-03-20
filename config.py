@@ -16,6 +16,7 @@ def load_secrets():
   }
   
   for key, value in secrets.items():
-        print(f"{key}: {'SET' if value else 'MISSING'}")
+    if not value:
+      print(f"{key}: {'MISSING'}")
   
   return secrets

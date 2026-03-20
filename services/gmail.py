@@ -60,21 +60,8 @@ class Gmail:
         )
         
         payload = msg_data.get("payload", {})
-        body_raw = payload.get("body", {}).get("data")
-        
-        if body_raw:
-          body_html = base64.urlsafe_b64decode(body_raw + "==").decode("utf-8")
-          body = BeautifulSoup(body_html, "html.parser").get_text()
-        else:
-          body = []
-          parts = payload.get("parts", [])
-          for idx, p in enumerate(parts):
-            body_raw = p["body"]["data"]
-            body_decoded = base64.urlsafe_b64decode(body_raw + "==").decode("utf-8")
-            body_text = BeautifulSoup(body_decoded, "html.parser").get_text()
-            body_text_stripped = body_text.replace("\r", "").replace("\t", "").replace("\n", "")
-            body.append({f"part{idx}": body_text_stripped})
-        
+        body = self.extract_body(payload)
+
         headers = {item["name"]: item["value"] for item in payload.get("headers", {})}
         
         msg_entry = {
@@ -88,7 +75,6 @@ class Gmail:
             "body": body
           }
         
-        print(msg_entry)
         messages.append(msg_entry)
         
       return messages
@@ -96,4 +82,24 @@ class Gmail:
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
         print(f"An error occurred: {error}")
+  
+  def extract_body(self, payload):
+    body_raw = payload.get("body", {}).get("data")
+    
+    if body_raw:
+      body_html = base64.urlsafe_b64decode(body_raw + "==").decode("utf-8")
+      body = self.get_text(body_html)
+    else:
+      parts = payload.get("body", {}).get("data") or payload.get("parts", [])
+      body = []
+      for idx, p in enumerate(parts):
+        body_raw = p["body"]["data"]
+        body_decoded = base64.urlsafe_b64decode(body_raw + "==").decode("utf-8")
+        body_text = self.get_text(body_decoded)
+        body_text_stripped = body_text.replace("\r", "").replace("\t", "").replace("\n", "")
+        body.append({f"part{idx}": body_text_stripped})
+      return body
+    
+  def get_text(self, html):
+    return BeautifulSoup(html, "html.parser").get_text()
   

@@ -1,11 +1,7 @@
 from google import genai
 from google.genai import errors
 from services.prompt import prompt, Events
-import os
-from dotenv import load_dotenv
 from config import load_secrets
-
-load_dotenv(override=True)
 
 class Gemini:
   def __init__(self):
