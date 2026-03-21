@@ -12,7 +12,10 @@ def load_secrets():
     'GOOGLE_API_KEY':       os.getenv('GOOGLE_API_KEY'),
     'GOOGLE_REFRESH_TOKEN': os.getenv('GOOGLE_REFRESH_TOKEN'),
     'MAILBOXES':            os.getenv('MAILBOXES'),
-    'GEMINI_API_KEY':       os.getenv('GEMINI_API_KEY')
+    'GEMINI_API_KEY':       os.getenv('GEMINI_API_KEY'),
+    'EMAIL1':               os.getenv('EMAIL1'),
+    'EMAIL2':               os.getenv('EMAIL2'),
+    'SLACK_WEBHOOK_URL':    os.getenv('SLACK_WEBHOOK_URL')
   }
   
   for key, value in secrets.items():

@@ -1,22 +1,24 @@
 # Life Admin
 
+Filter emails daily for action items and create calendar events for each, with one-click approval via Slack. In progress..
+
 ## Infra
 
-```
-AWS EventBridge          → triggers RunPipeline every hour
-AWS Lambda: RunPipeline  → fetches emails, extracts events, requests approval
-AWS Lambda: SlackHandler → handles approve/deny button clicks
-AWS API Gateway          → public URL for SlackHandler
-AWS Secrets Manager      → stores all credentials
+```text
+- [ ] AWS EventBridge          → triggers RunPipeline every hour
+- [ ] AWS Lambda: RunPipeline  → fetches emails, extracts events, requests approval
+- [ ] AWS Lambda: SlackHandler → handles approve/deny button clicks
+- [ ] AWS API Gateway          → public URL for SlackHandler
+- [ ] AWS Secrets Manager      → stores all credentials
 ```
 
 ## Services
 
 ```
-Gmail API        → read emails, send summary
-Google Calendar  → create events + send invites
-Claude API       → extract events + action items
-Slack            → approval UI
+- [x] Gmail API        → read emails, send summary
+- [x] Google Calendar  → create events + send invites
+- [x] Claude API       → extract events + action items
+- [x] Slack            → approval UI
 ```
 
 ## Code
@@ -54,4 +56,17 @@ Stored secrets:
 ├── GOOGLE_CLIENT_SECRET
 ├── GOOGLE_REFRESH_TOKEN # obtained once by running gmail_quickstart.py
 └── SLACK_WEBHOOK_URL
+```
+
+## Requirements
+
+```bash
+pip install -r requirements.txt
+```
+
+Slack CLI
+To install:
+
+```bash
+curl -fsSL https://downloads.slack-edge.com/slack-cli/install.sh | bash
 ```

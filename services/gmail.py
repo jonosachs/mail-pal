@@ -1,32 +1,15 @@
 
 from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
 from googleapiclient.errors import HttpError
 from config import load_secrets
 import base64
 from bs4 import BeautifulSoup
+from services.credentials import get_credentials
 
 class Gmail:
   def __init__(self):
     self.secrets = load_secrets()
-    self.creds = self.get_credentials()
-  
-  def get_credentials(self):
-    credentials = Credentials(
-      token=None,
-      refresh_token=self.secrets['GOOGLE_REFRESH_TOKEN'],
-      client_id=self.secrets['GOOGLE_CLIENT_ID'],
-      client_secret=self.secrets['GOOGLE_CLIENT_SECRET'],
-      token_uri='https://oauth2.googleapis.com/token'
-    )
-    
-    if not credentials.valid:
-      print("No valid credentials found, refreshing..")
-      credentials.refresh(Request())
-    
-    return credentials
-    
+    self.creds = get_credentials()
     
   def get_mail(self):
     mailboxes = self.secrets['MAILBOXES'].split(",")
@@ -87,14 +70,14 @@ class Gmail:
     body_raw = payload.get("body", {}).get("data")
     
     if body_raw:
-      body_html = base64.urlsafe_b64decode(body_raw + "==").decode("utf-8")
+      body_html = self.decode64(body_raw)
       body = self.get_text(body_html)
     else:
-      parts = payload.get("body", {}).get("data") or payload.get("parts", [])
+      parts = payload.get("parts", [])
       body = []
       for idx, p in enumerate(parts):
         body_raw = p["body"]["data"]
-        body_decoded = base64.urlsafe_b64decode(body_raw + "==").decode("utf-8")
+        body_decoded = self.decode64(body_raw)
         body_text = self.get_text(body_decoded)
         body_text_stripped = body_text.replace("\r", "").replace("\t", "").replace("\n", "")
         body.append({f"part{idx}": body_text_stripped})
@@ -103,3 +86,5 @@ class Gmail:
   def get_text(self, html):
     return BeautifulSoup(html, "html.parser").get_text()
   
+  def decode64(self, body_raw):
+    return base64.urlsafe_b64decode(body_raw + "==").decode("utf-8")

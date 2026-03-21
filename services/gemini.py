@@ -1,13 +1,14 @@
 from google import genai
 from google.genai import errors
-from services.prompt import prompt, Events
+from services.prompt import prompt, Events, Event
+from typing import List
 from config import load_secrets
 
 class Gemini:
   def __init__(self):
     self.secrets = load_secrets()
 
-  def extract_events(self, emails):
+  def extract_events(self, emails) -> List[Event]:
     print("Contacting Gemini API..")
     client = genai.Client(api_key=self.secrets['GEMINI_API_KEY'])
     
@@ -23,7 +24,7 @@ class Gemini:
       )
       events = Events.model_validate_json(response.text)
       print("Done.")
-      return events
+      return events.events # return List[Event] instead of Events
     except errors.APIError as e:
       print(e)
     
