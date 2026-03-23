@@ -1,8 +1,7 @@
 import datetime
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from typing import List
-from prompt import Event
+from models.event import Event
 from services.credentials import get_credentials
 from config import load_secrets
 
@@ -12,41 +11,40 @@ class Calendar:
     self.secrets = load_secrets()
     return
   
-  def create_events(self, events: List[Event]):
+  def create_event(self, e: Event):
     try:
       service = build("calendar", "v3", credentials=self.creds)
       
-      for e in events:
-        event = {
-          'summary': e.title,
-          'location': e.location,
-          'description': e.description,
-          'start': {
-            'dateTime': e.start,
-            'timeZone': 'Australia/Melbourne',
-          },
-          'end': {
-            'dateTime': e.end,
-            'timeZone': 'Australia/Melbourne',
-          },
-          'recurrence': [
-            e.recurrence
-          ],
-          'attendees': [
-            {'email': self.secrets["EMAIL1"]},
-            {'email': ''}, #TODO: add EMAIL2
-          ],
-          'reminders': {
-            'useDefault': True,
-            # 'overrides': [
-            #   {'method': 'email', 'minutes': 24 * 60},
-            #   {'method': 'popup', 'minutes': 10},
-            # ],
-          },
-        }
+      event = {
+        'summary': e.title,
+        'location': e.location,
+        'description': e.description,
+        'start': {
+          'dateTime': e.start,
+          'timeZone': 'Australia/Melbourne',
+        },
+        'end': {
+          'dateTime': e.end,
+          'timeZone': 'Australia/Melbourne',
+        },
+        'recurrence': [
+          e.recurrence
+        ],
+        'attendees': [
+          {'email': self.secrets["EMAILS"].split(",")[0]},
+          # {'email': self.secrets["EMAILS"].split(",")[1]}, #TODO: uncomment second email
+        ],
+        'reminders': {
+          'useDefault': True,
+          # 'overrides': [
+          #   {'method': 'email', 'minutes': 24 * 60},
+          #   {'method': 'popup', 'minutes': 10},
+          # ],
+        },
+      }
 
-        event = service.events().insert(calendarId='primary', body=event).execute()
-        print(f'Event created: {event.get('htmlLink')}')
+      event = service.events().insert(calendarId='primary', body=event).execute()
+      print(f'Event created: {event.get('htmlLink')}')
     
     except HttpError as error:
       print(f"An error occurred: {error}")

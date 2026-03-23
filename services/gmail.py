@@ -11,7 +11,7 @@ class Gmail:
     self.secrets = load_secrets()
     self.creds = get_credentials()
     
-  def get_mail(self):
+  def get_mail(self, max_results: 10):
     mailboxes = self.secrets['MAILBOXES'].split(",")
     query = ' OR '.join([f"in:{m}" for m in mailboxes])
     messages = []
@@ -24,7 +24,7 @@ class Gmail:
         service.users().messages().list(
           userId="me", 
           q=query,
-          maxResults=2, 
+          maxResults=max_results, 
         ).execute()
       )
       msgs_by_id = results.get("messages", [])

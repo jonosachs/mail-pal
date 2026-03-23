@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Timeout: 30
+    Environment:
+      Variables:
+        SECRET_NAME: life-admin/secrets
+        REGION: ap-southeast-2
+
+Resources:
+  DependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: life-admin-dependencies
+      ContentUri: layers/dependencies/
+      CompatibleRuntimes:
+        - python3.13
+    Metadata:
+      BuildMethod: python3.13
+
+  SlackHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/slack_handler/
+      Handler: lambda.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action: secretsmanager:GetSecretValue
+            Resource: arn:aws:secretsmanager:ap-southeast-2:713881815725:secret:life-admin/secrets-9MlbNy
+      Events:
+        SlackEvent:
+          Type: Api
+          Properties:
+            Path: /slack
+            Method: post
+
+  RunPipelineFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/run_pipeline/
+      Handler: main.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action: secretsmanager:GetSecretValue
+            Resource: arn:aws:secretsmanager:ap-southeast-2:713881815725:secret:life-admin/secrets-9MlbNy
+      Events:
+        ScheduledRun:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 8 * * ? *)
+
+Outputs:
+  SlackHandlerUrl:
+    Description: API Gateway URL for Slack interactions
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.ap-southeast-2.amazonaws.com/Prod/slack"

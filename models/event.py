@@ -12,7 +12,7 @@ class Event(BaseModel):
   end: str = Field(description="ISO 8601 format e.g. 2026-03-22T19:00:00+11:00")
   recurrence: str = Field(description='Defines recurrence rules, format: RRULE:FREQ=;COUNT=', default="")
   location: Optional[str] = Field(default=None, description="Physical or virtual location")
-  description: Optional[str] = Field(default=None, description="Additional context")
+  description: Optional[str] = Field(default=None, description="Additional context, keep it under 500 chars")
   confidence: float = Field(description="0-1 confidence score")
   
 class Events(BaseModel):

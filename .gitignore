@@ -5,3 +5,5 @@ token.json
 __pycache__/
 tempCodeRunnerFile.py
 services/tempCodeRunnerFile.py
+.aws-sam/
+sandbox.py

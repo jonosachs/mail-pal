@@ -6,10 +6,9 @@ gmail = Gmail()
 gemini = Gemini()
 slack = Slack()
 
-emails = gmail.get_mail()
-events = gemini.extract_events(emails)
-print(events)
+emails = gmail.get_mail(max_results=5)
+cal_events = gemini.extract_events(emails)
 
-e = slack.build_approval_message(events[0])
-slack.send(e)
-
+for e in cal_events:
+  msg = slack.build_approval_message(e)
+  slack.send(msg)
