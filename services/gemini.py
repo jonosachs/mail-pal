@@ -1,7 +1,7 @@
 from google import genai
 from google.genai import errors
 from services.prompt import prompt
-from models.Event import Event, Events
+from models.event import Event, Events
 from typing import List
 from config import load_secrets
 

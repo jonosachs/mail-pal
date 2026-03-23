@@ -1,9 +1,6 @@
 from services.gmail import Gmail
 from services.gemini import Gemini
 from services.slack import Slack
-from services.prompt import Event
-import datetime
-from datetime import tzinfo as TzInfo
 
 gmail = Gmail()
 gemini = Gemini()
