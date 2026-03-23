@@ -34,7 +34,7 @@ Resources:
             Action: secretsmanager:GetSecretValue
             Resource: arn:aws:secretsmanager:ap-southeast-2:713881815725:secret:life-admin/secrets-9MlbNy
       Events:
-        SlackEvent:
+        SlackEvent: # creates the API Gateway
           Type: Api
           Properties:
             Path: /slack
@@ -53,7 +53,7 @@ Resources:
             Action: secretsmanager:GetSecretValue
             Resource: arn:aws:secretsmanager:ap-southeast-2:713881815725:secret:life-admin/secrets-9MlbNy
       Events:
-        ScheduledRun:
+        ScheduledRun: # creates the EventBridge rule
           Type: Schedule
           Properties:
             Schedule: cron(0 8 * * ? *)
