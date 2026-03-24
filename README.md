@@ -1,72 +1,88 @@
 # Life Admin
 
-Filter emails daily for action items and create calendar events for each, with one-click approval via Slack. In progress..
+Scans emails daily for action items, extracts calendar events using Gemini AI, and sends one-click approve/deny notifications via Slack. On approval, creates the event in Google Calendar.
 
 ## Infra
 
 ```text
-- [ ] AWS EventBridge          → triggers RunPipeline every hour
+- [x] AWS EventBridge          → triggers RunPipeline daily
 - [x] AWS Lambda: RunPipeline  → fetches emails, extracts events, requests approval
 - [x] AWS Lambda: SlackHandler → handles approve/deny button clicks
-- [ ] AWS API Gateway          → public URL for SlackHandler
+- [x] AWS API Gateway          → public URL for SlackHandler
 - [x] AWS Secrets Manager      → stores all credentials
 ```
 
 ## Services
 
 ```
-- [x] Gmail API        → read emails, send summary
+- [x] Gmail API        → read emails from configured mailboxes
 - [x] Google Calendar  → create events + send invites
-- [x] Claude API       → extract events + action items
-- [x] Slack            → approval UI
+- [x] Gemini API       → extract events from emails (structured output)
+- [x] Slack            → approval UI with interactive buttons
 ```
 
 ## Code
 
 ```
 life-admin/
-├── .env                      # local secrets (never committed)
 ├── .gitignore
-├── requirements.txt
-├── template.yaml             # AWS SAM deployment config
-├── services/
-│   ├── gmail.py
-│   ├── calendar.py
-│   ├── claude.py
-│   └── slack.py
-├── models/
-│   └── event.py
+├── pyproject.toml                # dependencies
+├── template.yaml                 # AWS SAM deployment config
+├── samconfig.toml                # SAM deploy settings
+├── conftest.py                   # pytest configuration
+├── main.py                       # local entry point
+├── config.py                     # loads secrets from .env or Secrets Manager
 ├── functions/
 │   ├── run_pipeline/
-│   │   └── main.py           # EventBridge triggered
+│   │   └── pipeline.py           # EventBridge triggered Lambda
 │   └── slack_handler/
-│       └── main.py           # API Gateway triggered
-└── config.py                 # loads secrets from .env or Secrets Manager
+│       └── handler.py            # API Gateway triggered Lambda
+├── layers/
+│   └── dependencies/
+│       └── requirements.txt      # shared Lambda dependencies
+├── services/
+│   ├── gmail.py
+│   ├── gcal.py
+│   ├── gemini.py
+│   ├── slack.py
+│   ├── credentials.py
+│   └── prompt.py
+├── models/
+│   └── event.py
+└── tests/
+    ├── test_gcal.py
+    ├── test_gemini.py
+    ├── test_gmail.py
+    └── test_slack.py
 ```
 
 ## Credentials
 
 ```
 Local dev: .env file → python-dotenv
-Production: AWS Secrets Manager → fetched at Lambda startup
+Production: AWS Secrets Manager (life-admin/secrets) → fetched at Lambda startup
 
 Stored secrets:
-├── ANTHROPIC_API_KEY
 ├── GOOGLE_CLIENT_ID
 ├── GOOGLE_CLIENT_SECRET
-├── GOOGLE_REFRESH_TOKEN # obtained once by running gmail_quickstart.py
-└── SLACK_WEBHOOK_URL
+├── GOOGLE_REFRESH_TOKEN    # obtained once by running services/google_quickstart.py
+├── GOOGLE_API_KEY
+├── GEMINI_API_KEY
+├── EMAILS                  # comma-separated list of attendee emails
+├── MAILBOXES               # comma-separated Gmail label names to scan
+├── SLACK_WEBHOOK_URL
+└── SLACK_SIGNING_SECRET
 ```
 
-## Requirements
+## Setup
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
-Slack CLI
-To install:
+### Deploy
 
 ```bash
-curl -fsSL https://downloads.slack-edge.com/slack-cli/install.sh | bash
+sam build
+sam deploy
 ```

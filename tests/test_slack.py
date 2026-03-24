@@ -19,3 +19,4 @@ def test_send_msg():
   }
   
   msg_schema = build_msg(event=mock_event)
+  send_msg(msg_schema)
