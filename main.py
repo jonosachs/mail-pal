@@ -1,14 +1,7 @@
-from services.gmail import Gmail
-from services.gemini import Gemini
-from services.slack import Slack
+from functions.run_pipeline.pipeline import lambda_handler as run_pipeline
+import logging
 
-gmail = Gmail()
-gemini = Gemini()
-slack = Slack()
+logging.basicConfig(level=logging.INFO)
 
-emails = gmail.get_mail(max_results=5)
-cal_events = gemini.extract_events(emails)
-
-for e in cal_events:
-  msg = slack.build_approval_message(e)
-  slack.send(msg)
+if __name__ == "__main__":
+  run_pipeline(None, None)

@@ -24,8 +24,8 @@ Resources:
   SlackHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: functions/slack_handler/
-      Handler: lambda.lambda_handler
+      CodeUri: .
+      Handler: functions.slack_handler.handler.lambda_handler
       Layers:
         - !Ref DependenciesLayer
       Policies:
@@ -43,8 +43,8 @@ Resources:
   RunPipelineFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: functions/run_pipeline/
-      Handler: main.lambda_handler
+      CodeUri: .
+      Handler: functions.run_pipeline.pipeline.lambda_handler
       Layers:
         - !Ref DependenciesLayer
       Policies:

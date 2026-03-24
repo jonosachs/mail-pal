@@ -11,6 +11,7 @@ prompt = f"""
   Only include events that are important or actually require a response.
   Return a JSON array per the schema provided. 
   Only include events with confidence > 0.7.
+  Do not include events for dates that are in the past.
   Return empty array [] if no events found.
   Return JSON only, no other text.
 """

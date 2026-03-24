@@ -1,19 +1,28 @@
-import datetime
+from datetime import datetime
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from models.event import Event
 from services.credentials import get_credentials
 from config import load_secrets
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel("INFO")
+
+event_id = ""
 
 class Calendar:
   def __init__(self):
     self.creds = get_credentials()
     self.secrets = load_secrets()
-    return
+    self.service = build("calendar", "v3", credentials=self.creds)
   
-  def create_event(self, e: Event):
+  def create_event(self, e: Event) -> str:  
     try:
-      service = build("calendar", "v3", credentials=self.creds)
+      # Event resource
+      # https://developers.google.com/workspace/calendar/api/v3/reference/events#resource
+      start_dt = datetime.fromisoformat(e.start)
+      end_dt = datetime.fromisoformat(e.end)
       
       event = {
         'summary': e.title,
@@ -27,9 +36,6 @@ class Calendar:
           'dateTime': e.end,
           'timeZone': 'Australia/Melbourne',
         },
-        'recurrence': [
-          e.recurrence
-        ],
         'attendees': [
           {'email': self.secrets["EMAILS"].split(",")[0]},
           # {'email': self.secrets["EMAILS"].split(",")[1]}, #TODO: uncomment second email
@@ -43,42 +49,49 @@ class Calendar:
         },
       }
 
-      event = service.events().insert(calendarId='primary', body=event).execute()
-      print(f'Event created: {event.get('htmlLink')}')
-    
+      # Add recurrence tag only if provided
+      if e.recurrence:
+        event['recurrence'] = e.recurrence
+                     
+      event = self.service.events().insert(calendarId='primary', body=event).execute()
+      event_id = event["id"]
+      logger.info(f'Created event: {event_id}')
+      return event_id
     except HttpError as error:
-      print(f"An error occurred: {error}")
-
+      logger.error(f"An error occurred while trying to create an event: {error}")
+      raise
   
-  def get_events(self):
+  def get_event(self, event_id):
     try:
-      service = build("calendar", "v3", credentials=self.creds)
-
       # Call the Calendar API
-      print("Calling Calendar API..")
-      now = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
-      print("Getting the upcoming 10 events")
-      events_result = (
-          service.events()
-          .list(
+      logger.info("Getting event..")
+      event = (
+          self.service.events()
+          .get(
               calendarId="primary",
-              timeMin=now,
-              maxResults=10,
-              singleEvents=True,
-              orderBy="startTime",
+              eventId=event_id
           )
           .execute()
       )
-      events = events_result.get("items", [])
-
-      if not events:
-        print("No upcoming events found.")
+      
+      if not event:
+        logger.info(f"Event {event_id} not found.")
         return
 
-      # Prints the start and name of the next 10 events
-      for event in events:
-        start = event["start"].get("dateTime", event["start"].get("date"))
-        print(start, event["summary"])
-
+      logger.info(f"Retrieved event: {event["id"]}")
+      return event
+    
     except HttpError as error:
-      print(f"An error occurred: {error}")
+      logger.error(f"An error occurred: {error}")
+      
+  
+  def delete_event(self, event_id):
+    try:
+      response = self.service.events().delete(
+        calendarId="primary",
+        eventId=event_id
+      ).execute()
+      logger.info(f"Successfully deleted event {event_id}")
+      return response
+    except Exception as e:
+      logger.error(f"An error occured trying to delete event: {e}")

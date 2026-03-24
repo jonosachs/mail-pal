@@ -3,25 +3,28 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from config import load_secrets
 import base64
+import logging
 from bs4 import BeautifulSoup
 from services.credentials import get_credentials
+
+logger = logging.getLogger(__name__)
 
 class Gmail:
   def __init__(self):
     self.secrets = load_secrets()
     self.creds = get_credentials()
+    self.service = build("gmail", "v1", credentials=self.creds)
     
-  def get_mail(self, max_results: 10):
+  def get_mail(self, max_results: int = 10):
     mailboxes = self.secrets['MAILBOXES'].split(",")
     query = ' OR '.join([f"in:{m}" for m in mailboxes])
     messages = []
     
     try:
       # Call the Gmail API
-      print("Calling Gmail API..")
-      service = build("gmail", "v1", credentials=self.creds)
+      logger.info("Calling Gmail API..")
       results = (
-        service.users().messages().list(
+        self.service.users().messages().list(
           userId="me", 
           q=query,
           maxResults=max_results, 
@@ -30,12 +33,12 @@ class Gmail:
       msgs_by_id = results.get("messages", [])
 
       if not msgs_by_id:
-        print("No messages found.")
+        logger.info("No messages found.")
         return []
       
       for msg in msgs_by_id:
         msg_data = (
-          service.users().messages().get(
+          self.service.users().messages().get(
             userId="me", 
             id=msg["id"],
             format="full"
@@ -59,12 +62,13 @@ class Gmail:
           }
         
         messages.append(msg_entry)
-        
+      
+      logger.info(f"Obtained {len(messages)} messages")
       return messages
     
     except HttpError as error:
-        # TODO(developer) - Handle errors from gmail API.
-        print(f"An error occurred: {error}")
+      logger.error(f"An error occurred while trying to get Gmail messages: {error}")
+      raise
   
   def extract_body(self, payload):
     body_raw = payload.get("body", {}).get("data")
@@ -81,7 +85,7 @@ class Gmail:
         body_text = self.get_text(body_decoded)
         body_text_stripped = body_text.replace("\r", "").replace("\t", "").replace("\n", "")
         body.append({f"part{idx}": body_text_stripped})
-      return body
+    return body
     
   def get_text(self, html):
     return BeautifulSoup(html, "html.parser").get_text()

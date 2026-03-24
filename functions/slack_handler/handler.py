@@ -2,23 +2,24 @@ import json
 from urllib.parse import parse_qs, unquote_plus
 import logging
 from services.gcal import Calendar
+from services.slack import send_confirmation
 from models.event import Event
-import os 
 import hmac, hashlib
 import time
 from config import load_secrets
 
 # Initialize the logger
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 logger.setLevel("INFO")
-  
+
 def lambda_handler(event, context):
   try:
     # Verifying requests from Slack 
     # https://docs.slack.dev/authentication/verifying-requests-from-slack/
     
     # Grab your Slack Signing Secret
-    slack_signing_secret = load_secrets()['SLACK_SIGNING_SECRET']
+    secrets = load_secrets()
+    slack_signing_secret = secrets['SLACK_SIGNING_SECRET']
     # Use the raw request body, without headers, before it has been deserialized from JSON
     raw_body = event["body"]
     # Extract the timestamp header from the request.
@@ -33,8 +34,9 @@ def lambda_handler(event, context):
     
     # Hash the resulting string, using the signing secret as a key, and taking the hex digest of the hash.
     my_signature = 'v0=' + hmac.new(
-      slack_signing_secret, 
-      sig_basestring
+      slack_signing_secret.encode(), 
+      sig_basestring.encode(),
+      hashlib.sha256
     ).hexdigest()
     
     # Compare the resulting signature to the header on the request.
@@ -49,18 +51,22 @@ def lambda_handler(event, context):
       action = slack_payload["actions"][0]                                                                  
       action_id = action["action_id"]
       value = action["value"] 
+      event_object = Event.model_validate_json(value)
+      response_url = slack_payload["response_url"]
       
       if action_id == "approve":
-        
-        event_object = Event.model_validate_json(value)
         gcal = Calendar()
         gcal.create_event(event_object)
 
+        send_confirmation(response_url=response_url, event=event_object, approved=True)
+        
         return {
             "statusCode": 200,
             "body": "Calender event created successfully"
         }
       else:
+        send_confirmation(response_url=response_url, event=event_object, approved=False)
+       
         return {
             "statusCode": 200,
             "body": "Calender event denied"
@@ -73,3 +79,7 @@ def lambda_handler(event, context):
   except Exception as e:
       logger.error(f"Error: {str(e)}")
       raise
+    
+    
+
+    

@@ -13,8 +13,12 @@ KEYS = [
   'GOOGLE_REFRESH_TOKEN', 
   'MAILBOXES',            
   'GEMINI_API_KEY',
-  'EMAIL1',               
-  'EMAIL2',               
+  'EMAILS',
+  'SLACK_APP_ID',
+  'SLACK_CLIENT_ID',
+  'SLACK_CLIENT_SECRET',
+  'SLACK_SIGNING_SECRET',
+  'SLACK_VERIFICATION_TOKEN',
   'SLACK_WEBHOOK_URL'
 ]
 
