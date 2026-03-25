@@ -24,7 +24,7 @@ def build_msg(event: Event) -> dict:
               "type": "section",
               "text": {
                   "type": "mrkdwn",
-                  "text": f"*{event.title}*\n{event.from_} | {event.date} {event.time} | {event.duration_minutes} mins\n{event.description}"
+                  "text": f"*{event.title}*\n{event.from_} | {event.date} {event.time} | {event.duration_minutes} mins\n{event.description}\n{event.source_url}"
               }
           },
           {
@@ -42,7 +42,7 @@ def build_msg(event: Event) -> dict:
                       "text": {"type": "plain_text", "text": "Deny"},
                       "style": "danger",
                       "action_id": "deny",
-                      "value": event.id_
+                      "value": event.model_dump_json()
                   }
               ]
           }
@@ -50,16 +50,32 @@ def build_msg(event: Event) -> dict:
   }
 
 def send_confirmation(response_url: str, event: Event, approved: bool):
-  logger.info("Sending decision acknowledgement msg to Slack..")
   try:
     response = requests.post(response_url, json={
       "replace_original": True,
-      "text": f"✓ Event created: {event.title}" if approved else f"✗ Event declined: {event.title}"
+      "text": f"✓ Event created: {event.title} {event.date}" if approved else f"✗ Event declined: {event.title} {event.date}"
     })
-    logger.info(f"{response.status_code}, {response.text}, User response recieved")
+    if response.status_code != 200:
+      logger.error(f"Something went wrong: {response}")
+      return
+    logger.info("Sent decision acknowledgement msg to Slack.")
   except requests.exceptions.RequestException as e:
     logger.error(f"An error occured while trying to send decision acknowledgement msg to Slack: {e}")
     raise
     
   
+def send_processing(response_url: str):
+  try:
+    response = requests.post(response_url, json={
+        "replace_original": True,
+        "text": "Processing request.."
+      })
+    if response.status_code != 200:
+      logger.error(f"Something went wrong: {response}")
+      return
+    logger.info("Sent processing msg to Slack.")
+  except requests.exceptions.RequestException as e:
+    logger.error(f"An error occured while trying to send a 'processing' msg to Slack: {e}")
     
+def delete_msg():
+  return

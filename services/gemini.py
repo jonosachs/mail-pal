@@ -30,7 +30,7 @@ class Gemini:
       events_obj = Events.model_validate_json(response.text)
       events = events_obj.events # Pydantic 'Events' object has field events: List[Event]
       num_events = len(events)
-      logger.info(f"Event payload from Gemini: {events[0]}")
+      logger.info(f"Sample event payload from Gemini: {events[0]}")
       if num_events > 0:
         logger.info(f"Extracted {num_events} events from {len(emails)} emails.")
       else:

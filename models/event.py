@@ -18,6 +18,7 @@ class Event(BaseModel):
   location: Optional[str] = Field(default=None, description="Physical or virtual location")
   description: Optional[str] = Field(default=None, description="Additional context, keep it under 500 chars")
   confidence: float = Field(description="0-1 confidence score")
+  source_url: Optional[str] = Field(default=None, description="https://mail.google.com/mail/u/0/#inbox/{msg_id}")
   
 class Events(BaseModel):
   events: List[Event]

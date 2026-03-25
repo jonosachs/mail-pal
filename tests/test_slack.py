@@ -16,7 +16,8 @@ def test_send_msg():
     end='2026-03-25T10:00:00+11:00', 
     location='https://zoom.us/j/123456789',
     description='Please come prepared to discuss your priorities.',
-    confidence=1.0
+    confidence=1.0,
+    source_url="http://www.gmail.com/"
   )
 
   msg_schema = build_msg(event=mock_event)

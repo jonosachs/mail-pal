@@ -56,7 +56,7 @@ Resources:
         ScheduledRun: # creates the EventBridge rule
           Type: Schedule
           Properties:
-            Schedule: cron(0 8 * * ? *)
+            Schedule: cron(0 9 * * ? *)
 
 Outputs:
   SlackHandlerUrl:

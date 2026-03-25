@@ -45,16 +45,29 @@ class Calendar:
           #   {'method': 'popup', 'minutes': 10},
           # ],
         },
+        "source": {
+          "url": e.source_url,
+          # "title": 
+        },
       }
 
-      # Add recurrence tag only if provided
+      # Add recurrence tag only if data provided
       if e.recurrence:
         event['recurrence'] = e.recurrence
-                     
-      event = self.service.events().insert(calendarId='primary', body=event).execute()
+
+      # events().insert fields:
+      # https://developers.google.com/workspace/calendar/api/v3/reference/events/insert
+                           
+      event = self.service.events().insert(
+        calendarId='primary', 
+        body=event, 
+        sendUpdates="externalOnly"
+      ).execute()
+      
       event_id = event["id"]
       logger.info(f'Created event: {event_id}')
       return event_id
+    
     except HttpError as error:
       logger.error(f"An error occurred while trying to create an event: {error}")
       raise
@@ -89,7 +102,9 @@ class Calendar:
         calendarId="primary",
         eventId=event_id
       ).execute()
+      
       logger.info(f"Successfully deleted event {event_id}")
       return response
+    
     except Exception as e:
       logger.error(f"An error occured trying to delete event: {e}")

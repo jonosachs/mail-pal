@@ -2,6 +2,9 @@ import pytest
 from services.gcal import Calendar
 from models.event import Event
 import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Run single test: python -m pytest tests/test_gcal.py -s
 
@@ -18,12 +21,15 @@ def test_create_event():
     end="2026-03-25T09:30:00+11:00",
     location="Zoom: https://zoom.us/j/123456789",
     description="Weekly team standup to discuss priorities and blockers.",
-    confidence=0.95
+    confidence=0.95,
+    source_url="http://www.gmail.com/"
   )
 
   cal = Calendar()
   event_id = cal.create_event(test_event)
   retrieved_event = cal.get_event(event_id)
+  
+  logger.info(retrieved_event)
   
   # Event fields:
   # https://developers.google.com/workspace/calendar/api/v3/reference/events#resource

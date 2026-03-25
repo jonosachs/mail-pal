@@ -45,6 +45,9 @@ class Gmail:
           ).execute()
         )
         
+        # Message object fields:
+        # https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages#Message
+        
         payload = msg_data.get("payload", {})
         body = self.extract_body(payload)
 

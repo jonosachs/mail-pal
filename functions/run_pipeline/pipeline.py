@@ -21,10 +21,11 @@ def lambda_handler(_event, _context):
       msg = build_msg(e)
       response = send_msg(msg)
       if response.status_code == 200: sent += 1
-      
-    logger.info(f"Sent {sent} Slack messages.")
+      else: logger.error(f"Something went wrong: {response}")
     
+    logger.info(f"Sent {sent} Slack messages.")
     return {"statusCode": 200, "body": "Pipeline complete"}
+  
   except Exception as e:
     logger.error(f"Pipeline failed: {e}")
     return {"statusCode": 500, "body": "Pipeline failed"}
