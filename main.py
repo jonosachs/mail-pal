@@ -4,4 +4,4 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
-  run_pipeline(None, None)
+    run_pipeline(None, None)
