@@ -77,7 +77,7 @@ class Gmail:
 
                 messages.append(msg_entry)
 
-            logger.info(f"Obtained {len(messages)} messages")
+            logger.info(f"Obtained {len(messages)} messages matching query: {query}")
             return messages
 
         except HttpError as error:
