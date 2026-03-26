@@ -1,10 +1,10 @@
-from google import genai
-from google.genai import errors
-from services.prompt import prompt
 from models.event import Event, Events
-from typing import List
-from config import load_secrets
 from services.llm_base import LlmBase
+from services.prompt import prompt
+from config import load_secrets
+from google.genai import errors
+from google import genai
+from typing import List
 import logging
 
 logger = logging.getLogger(__name__)

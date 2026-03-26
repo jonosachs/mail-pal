@@ -5,4 +5,4 @@ python-dotenv
 google-genai
 beautifulsoup4
 boto3
-pytz
+zoneinfo

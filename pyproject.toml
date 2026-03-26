@@ -12,7 +12,7 @@
     "boto3",
     "requests",
     "pydantic",
-    "pytz",
+    "zoneinfo",
   ]
 
 [project.optional-dependencies]

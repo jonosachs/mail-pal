@@ -2,14 +2,13 @@ from services.gmail import Gmail
 from services.gemini import Gemini
 from services.slack import build_msg, send_msg
 from services.gcal import Calendar
-from datetime import datetime
-import logging
-import pytz
-import os
 from dotenv import load_dotenv
+import logging
 
 load_dotenv(override=True)
 
+# Set level INFO, DEBUG etc.
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +21,7 @@ def lambda_handler(_event, _context):
         # Accesptable formats for email filter:
         # newer_than:2d
         # after:2004/04/16
-        email_filter = "newer_than:2d"
+        email_filter = "newer_than:14d"
 
         # Get emails using Gmail api
         # Omitting the filter argument will get emails from all time
@@ -33,7 +32,7 @@ def lambda_handler(_event, _context):
             return
 
         # Get existing events to avoid re-creating
-        exist_events = cal.get_exist_events(query="[bot]")
+        exist_events = cal.get_exist_events(query="[bot]", max_results=10)
 
         # Extract events from emails using Gemini api
         proposed_events = llm.extract_events(exist_events=exist_events, emails=emails)
@@ -59,8 +58,3 @@ def lambda_handler(_event, _context):
     except Exception as e:
         logger.error(f"Pipeline failed: {e}")
         return {"statusCode": 500, "body": "Pipeline failed"}
-
-
-def today():
-    aest = pytz.timezone("Australia/Melbourne")
-    return datetime.now(aest).strftime("%Y/%m/%d")

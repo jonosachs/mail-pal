@@ -1,12 +1,12 @@
-import json
 from urllib.parse import parse_qs, unquote_plus
-import logging
 from services.gcal import Calendar
-from services.slack import send_confirmation, send_processing
+from services.slack import confirm_msg, update_msg
 from models.event import Event
-import hmac, hashlib
-import time
 from config import load_secrets
+import hmac, hashlib
+import json
+import logging
+import time
 
 # Initialize the logger
 logger = logging.getLogger(__name__)
@@ -16,14 +16,16 @@ def lambda_handler(event, context):
     # Send immediate processing msg to acknowledge user button click
     body = parse_qs(event["body"])  # dict of key→list pairs
     slack_payload = json.loads(body["payload"][0])
+    logger.debug(f"Slack payload: {slack_payload}")
     response_url = slack_payload["response_url"]
-    send_processing(response_url)
+    update_msg(response_url, "Processing request..")
 
     try:
         if request_validated(event):
             action = slack_payload["actions"][0]
             user_response = action["action_id"]
             value = action["value"]
+            logger.debug(f"Value: {value}")
             event_obj = Event.model_validate_json(value)
 
             logger.info(f"Recieved user response: {user_response}")
@@ -31,22 +33,20 @@ def lambda_handler(event, context):
             if user_response == "approve":
                 gcal = Calendar()
                 gcal.create_event(event_obj)
-                send_confirmation(
-                    response_url=response_url, event=event_obj, approved=True
-                )
+                confirm_msg(response_url=response_url, event=event_obj, approved=True)
                 return {
                     "statusCode": 200,
                     "body": "Calender event created successfully",
                 }
             else:
-                send_confirmation(
-                    response_url=response_url, event=event_obj, approved=False
-                )
+                confirm_msg(response_url=response_url, event=event_obj, approved=False)
                 return {"statusCode": 200, "body": "Calender event denied"}
         else:
+            update_msg(response_url, "Authentication failed.")
             return {"statusCode": 401, "body": "Authentication failed"}
     except Exception as e:
         logger.error(f"Error occured while handling Slack response: {str(e)}")
+        update_msg(response_url, "Failed: {e}.")
         raise
 
 

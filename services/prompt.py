@@ -1,6 +1,7 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-local_dt = datetime.now().astimezone()
+local_dt = datetime.now(ZoneInfo("Australia/Melbourne")).isoformat()
 
 prompt = f"""
   Today is {local_dt.strftime('%Y-%m-%d')}.

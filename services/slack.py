@@ -1,6 +1,6 @@
-import requests
 from config import load_secrets
 from models.event import Event
+import requests
 import logging
 
 secrets = load_secrets()
@@ -51,7 +51,7 @@ def build_msg(event: Event) -> dict:
     }
 
 
-def send_confirmation(response_url: str, event: Event, approved: bool):
+def confirm_msg(response_url: str, event: Event, approved: bool):
     try:
         response = requests.post(
             response_url,
@@ -75,20 +75,18 @@ def send_confirmation(response_url: str, event: Event, approved: bool):
         raise
 
 
-def send_processing(response_url: str):
+def update_msg(response_url: str, msg: str):
     try:
         response = requests.post(
             response_url,
-            json={"replace_original": True, "text": "Processing request.."},
+            json={"replace_original": True, "text": msg},
         )
         if response.status_code != 200:
             logger.error(f"Something went wrong: {response}")
             return
-        logger.info("Sent processing msg to Slack.")
+        logger.info("Sent update msg to Slack.")
     except requests.exceptions.RequestException as e:
-        logger.error(
-            f"An error occured while trying to send a 'processing' msg to Slack: {e}"
-        )
+        logger.error(f"An error occured while sending update msg to Slack: {e}")
 
 
 def delete_msg():

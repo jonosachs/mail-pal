@@ -1,14 +1,13 @@
-from datetime import datetime
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from models.event import Event
 from services.credentials import get_credentials
 from config import load_secrets
+from models.event import Event
 import logging
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
-
-event_id = ""
 
 
 class Calendar:
@@ -99,7 +98,12 @@ class Calendar:
             logger.info("Getting events..")
             payload = (
                 self.service.events()
-                .list(calendarId="primary", q=query, maxResults=max_results)
+                .list(
+                    calendarId="primary",
+                    timeMin=datetime.now(ZoneInfo("Australia/Melbourne")).isoformat(),
+                    q=query,
+                    maxResults=max_results,
+                )
                 .execute()
             )
 
