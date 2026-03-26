@@ -6,7 +6,6 @@ import logging
 secrets = load_secrets()
 
 logger = logging.getLogger(__name__)
-logger.setLevel("INFO")
 
 
 def send_msg(msg):

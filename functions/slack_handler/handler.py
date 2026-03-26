@@ -10,7 +10,6 @@ from config import load_secrets
 
 # Initialize the logger
 logger = logging.getLogger(__name__)
-logger.setLevel("INFO")
 
 
 def lambda_handler(event, context):

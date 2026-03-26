@@ -36,3 +36,6 @@ class Event(BaseModel):
 
 class Events(BaseModel):
     events: List[Event]
+    notes: Optional[str] = Field(
+        default=None, description="If you return no events provide brief reasoning"
+    )

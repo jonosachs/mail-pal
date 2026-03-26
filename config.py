@@ -12,16 +12,11 @@ logger = logging.getLogger(__name__)
 KEYS = [
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
-    "GOOGLE_API_KEY",
     "GOOGLE_REFRESH_TOKEN",
     "MAILBOXES",
     "GEMINI_API_KEY",
     "EMAILS",
-    "SLACK_APP_ID",
-    "SLACK_CLIENT_ID",
-    "SLACK_CLIENT_SECRET",
     "SLACK_SIGNING_SECRET",
-    "SLACK_VERIFICATION_TOKEN",
     "SLACK_WEBHOOK_URL",
 ]
 

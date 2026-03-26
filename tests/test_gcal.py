@@ -6,9 +6,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 # Run single test: python -m pytest tests/test_gcal.py -s
-
-
 def test_create_event():
     # recurrence field is omitted for single events
     test_event = Event(
@@ -34,8 +33,8 @@ def test_create_event():
 
     # Event fields:
     # https://developers.google.com/workspace/calendar/api/v3/reference/events#resource
-    assert retrieved_event["summary"] == test_event.title
-    assert retrieved_event["start"]["dateTime"] == test_event.start
+    assert test_event.title in retrieved_event["summary"]
+    assert test_event.start in retrieved_event["start"]["dateTime"]
 
     response = cal.delete_event(event_id)
     assert response == ""

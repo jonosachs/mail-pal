@@ -11,13 +11,12 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 logger = logging.getLogger(__name__)
-logger.setLevel("INFO")
 
 
 def lambda_handler(_event, _context):
     try:
         gmail = Gmail()
-        gemini = Gemini()
+        llm = Gemini()
         cal = Calendar()
 
         email_filter = os.getenv("EMAIL_FILTER")
@@ -34,9 +33,7 @@ def lambda_handler(_event, _context):
         exist_events = cal.get_exist_events(query="[bot]")
 
         # Extract events from emails using Gemini api
-        proposed_events = gemini.extract_events(
-            exist_events=exist_events, emails=emails
-        )
+        proposed_events = llm.extract_events(exist_events=exist_events, emails=emails)
 
         if not proposed_events:
             logger.info("No new events, ending pipeline")

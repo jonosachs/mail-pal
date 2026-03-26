@@ -18,11 +18,12 @@ class Gmail:
     def get_mail(self, filter: str = None, max_results: int = 10):
         """Filters: https://support.google.com/mail/answer/7190"""
 
+        # Get comma separated mailboxes to include in search
         mailboxes = self.secrets["MAILBOXES"].split(",")
         query = " OR ".join([f"in:{m}" for m in mailboxes])
+        # Add custom filter arguments if provided
         if filter:
             query += f" {filter}"
-        messages = []
 
         try:
             logger.info("Calling Gmail API..")
@@ -44,6 +45,7 @@ class Gmail:
                 logger.info(f"No messages found matching query: {query}.")
                 return []
 
+            messages = []
             for msg in msgs_by_id:
                 msg_data = (
                     self.service.users()
