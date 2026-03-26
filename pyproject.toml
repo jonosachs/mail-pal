@@ -12,7 +12,6 @@
     "boto3",
     "requests",
     "pydantic",
-    "zoneinfo",
   ]
 
 [project.optional-dependencies]
