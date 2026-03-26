@@ -4,8 +4,7 @@ from zoneinfo import ZoneInfo
 local_dt = datetime.now(ZoneInfo("Australia/Melbourne")).isoformat()
 
 prompt = f"""
-  Today is {local_dt.strftime('%Y-%m-%d')}.
-  Local Timezone is {local_dt.tzinfo}
+  Today is {local_dt}.
   
   Your job is to filter the provided emails and find any important events, or actions items, and return calendar entries for each.
   You will also be provided with a list of existing events that you've extracted before. Do not re-create these events.
