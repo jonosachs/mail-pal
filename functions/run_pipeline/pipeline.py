@@ -8,8 +8,8 @@ import logging
 load_dotenv(override=True)
 
 # Set level INFO, DEBUG etc.
-logger = logging.getLogger(__name__).setLevel(logging.DEBUG) 
-
+logger = logging.getLogger(__name__)                                                                                     
+logger.setLevel(logging.DEBUG) 
 
 def lambda_handler(_event, _context):
     try:
