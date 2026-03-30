@@ -9,7 +9,7 @@ Globals:
       Variables:
         AWS_SECRETS_MAN: life-admin/secrets
         REGION: ap-southeast-2
-        AWS_LAMBDA_LOG_LEVEL: DEBUG
+        AWS_LAMBDA_LOG_LEVEL: INFO
 
 Resources:
   DependenciesLayer:

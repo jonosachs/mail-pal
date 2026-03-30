@@ -1,6 +1,6 @@
-from urllib.parse import parse_qs, unquote_plus
+from urllib.parse import parse_qs
 from services.gcal import Calendar
-from services.slack import confirm_msg, update_msg
+from services.slack import confirm_user_action, send_update_msg
 from models.event import Event
 from config import load_secrets
 import hmac, hashlib
@@ -13,46 +13,68 @@ logger = logging.getLogger(__name__)
 
 
 def lambda_handler(event, context):
+    """
+    Lamba handler for SlackHandlerFunction
+    """
+
+    logger.info(f"raw event: {event}")
+
     # Send immediate processing msg to acknowledge user button click
-    body = parse_qs(event["body"])  # dict of key→list pairs
-    slack_payload = json.loads(body["payload"][0])
-    logger.debug(f"Slack payload: {slack_payload}")
-    response_url = slack_payload["response_url"]
-    update_msg(response_url, "Processing request..")
+    # This requires unpacking event to get the respones url.
+    raw_body = event["body"]
+    logger.info(f"raw event body: {raw_body}")
+
+    decoded = parse_qs(raw_body)
+    logger.info(f"decoded event body: {decoded}")
+
+    payload_str = decoded["payload"][0]  # unwraps the list
+    payload_json = json.loads(payload_str)
+
+    # Slack payload fields:
+    # https://docs.slack.dev/reference/interaction-payloads/block_actions-payload/
+    response_url = payload_json["response_url"]
+    send_update_msg(response_url, "Processing request..")
 
     try:
         if request_validated(event):
-            action = slack_payload["actions"][0]
-            user_response = action["action_id"]
-            value = action["value"]
-            logger.debug(f"Value: {value}")
-            event_obj = Event.model_validate_json(value)
+            actions = payload_json["actions"][0]
+            action_id = actions["action_id"]
+            value = actions["value"]
+            event_obj = Event.model_validate_json(
+                value
+            )  # Returns validated Pydantic model.
 
-            logger.info(f"Recieved user response: {user_response}")
+            logger.info(f"Recieved user response: {action_id}")
 
-            if user_response == "approve":
+            if action_id == "approve":
                 gcal = Calendar()
                 gcal.create_event(event_obj)
-                confirm_msg(response_url=response_url, event=event_obj, approved=True)
+                confirm_user_action(
+                    slack_response_url=response_url, event=event_obj, approved=True
+                )
                 return {
                     "statusCode": 200,
                     "body": "Calender event created successfully",
                 }
             else:
-                confirm_msg(response_url=response_url, event=event_obj, approved=False)
+                confirm_user_action(
+                    slack_response_url=response_url, event=event_obj, approved=False
+                )
                 return {"statusCode": 200, "body": "Calender event denied"}
         else:
-            update_msg(response_url, "Authentication failed.")
+            send_update_msg(response_url, "Authentication failed.")
             return {"statusCode": 401, "body": "Authentication failed"}
     except Exception as e:
         logger.error(f"Error occured while handling Slack response: {str(e)}")
-        update_msg(response_url, "Failed: {e}.")
+        send_update_msg(response_url, "Failed: {e}.")
         raise
 
 
 def request_validated(event) -> bool:
-    # Verifying requests from Slack
-    # https://docs.slack.dev/authentication/verifying-requests-from-slack/
+    """
+    Verify requests from Slack
+        Template: https://docs.slack.dev/authentication/verifying-requests-from-slack/
+    """
 
     # Grab your Slack Signing Secret
     secrets = load_secrets()

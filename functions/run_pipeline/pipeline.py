@@ -1,58 +1,67 @@
 from services.gmail import Gmail
 from services.gemini import Gemini
-from services.slack import build_msg, send_msg
+from services.slack import (
+    build_slack_msg,
+    send_slack_webhook,
+)
 from services.gcal import Calendar
-from dotenv import load_dotenv
 import logging
-
-load_dotenv(override=True)
 
 logger = logging.getLogger(__name__)
 
 
 def lambda_handler(_event, _context):
+    """
+    Lambda handler for RunPipelineFunction
+    """
+
     try:
         gmail = Gmail()
         llm = Gemini()
         cal = Calendar()
 
-        # Accesptable formats for email filter:
-        # newer_than:2d
-        # after:2004/04/16
-        email_filter = "newer_than:5d"
+        # Accesptable formats for email filter: newer_than:2d, after:2004/04/16
+        email_filter = "newer_than:2d"
 
-        # Get emails using Gmail api
+        # Get emails using Gmail api.
         # Omitting the filter argument will get emails from all time
         emails = gmail.get_mail(filter=email_filter, max_results=20)
 
         if not emails:
-            logger.info("No emails found, ending pipeline")
+            abort_msg = "No emails found, aborting pipeline"
+            logger.info(abort_msg)
+            send_slack_webhook({"text": abort_msg})
             return
 
         # Get existing events to avoid re-creating
         exist_events = cal.get_exist_events(query="[bot]", max_results=10)
 
         # Extract events from emails using Gemini api
-        proposed_events = llm.extract_events(exist_events=exist_events, emails=emails)
+        extracted_events = llm.extract_events(exist_events=exist_events, emails=emails)
 
-        if not proposed_events:
-            logger.info("No new events, ending pipeline")
+        if not extracted_events:
+            abort_msg = "No new events, aborting pipeline"
+            logger.info(abort_msg)
+            send_slack_webhook({"text": abort_msg})
             return
 
-        # Build event approval msg and send to Slack
+        # Build event approval messages and send to Slack
         logger.info("Sending Slack messages")
         sent = 0
-        for e in proposed_events:
-            msg = build_msg(e)
-            response = send_msg(msg)
+
+        for e in extracted_events:
+            slack_msg = build_slack_msg(e)
+            response = send_slack_webhook(slack_msg)
             if response.status_code == 200:
                 sent += 1
             else:
-                logger.error(f"Something went wrong: {response}")
+                logger.error(f"Failed to extract an event: {response.text}")
 
         logger.info(f"Sent {sent} Slack messages.")
         return {"statusCode": 200, "body": "Pipeline complete"}
 
     except Exception as e:
-        logger.error(f"Pipeline failed: {e}")
+        error = f"Pipeline failed: {e}"
+        logger.error(error)
+        send_slack_webhook({"text": error})
         return {"statusCode": 500, "body": "Pipeline failed"}

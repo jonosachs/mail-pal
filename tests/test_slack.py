@@ -1,5 +1,5 @@
 import pytest
-from services.slack import build_msg, send_msg
+from services.slack import build_slack_msg, send_slack_webhook
 from models.event import Event
 
 # Run single test: python -m pytest tests/test_slack.py -s
@@ -21,5 +21,7 @@ def test_send_msg():
         source_url="http://www.gmail.com/",
     )
 
-    msg_schema = build_msg(event=mock_event)
-    send_msg(msg_schema)
+    msg_schema = build_slack_msg(event=mock_event)
+    response = send_slack_webhook(msg_schema)
+
+    assert response.status_code == 200

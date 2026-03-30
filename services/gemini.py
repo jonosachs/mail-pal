@@ -50,3 +50,4 @@ class Gemini(LlmBase):
 
         except errors.APIError as e:
             logger.error(f"An error occured while trying to extract events: {e}")
+            raise

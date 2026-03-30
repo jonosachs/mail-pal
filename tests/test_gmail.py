@@ -23,8 +23,9 @@ msg_format = {
 
 def test_get_mail():
     gmail = Gmail()
+
     mail_list = gmail.get_mail(max_results=1)  # -> list
     mail = mail_list[0]
-    logger.info(mail)
+
     assert len(mail["headers"]["subject"]) > 0
     assert mail["body"] != None

@@ -1,24 +1,43 @@
 from config import load_secrets
 from models.event import Event
+from requests import HTTPError, Response, RequestException
 import requests
 import logging
 
 secrets = load_secrets()
-
 logger = logging.getLogger(__name__)
 
 
-def send_msg(msg):
-    webhook_url = secrets["SLACK_WEBHOOK_URL"]
+def post(url: str, payload: dict) -> Response:
+    """
+    Slack Post request handler. Uses json= parameter.
+    Note: Slack webhook just returns HTTP 200 'ok' on success.
+    """
     try:
-        response = requests.post(webhook_url, json=msg)
+        response = requests.post(url=url, json=payload, timeout=5)
+        response.raise_for_status()
+        logger.info("Successfully sent msg to Slack")
         return response
-    except requests.exceptions.RequestException as e:
-        logger.error(f"An error occured while trying to send a Slack msg: {e}")
-        raise
+    except HTTPError as e:
+        raise HTTPError(f"Error sending msg to Slack: {e}") from e
 
 
-def build_msg(event: Event) -> dict:
+def send_slack_webhook(payload: dict) -> Response:
+    """
+    Sends Slack message (using incoming webhook) to get user decision.
+    Requies activating incoming webhooks on Slack management dashboard.
+    """
+
+    webhook_url = secrets["SLACK_WEBHOOK_URL"]
+    response = post(webhook_url, payload)
+    return response
+
+
+def build_slack_msg(event: Event) -> dict:
+    """
+    Builds structured Slack actions message.
+    """
+
     return {
         "blocks": [
             {
@@ -51,43 +70,39 @@ def build_msg(event: Event) -> dict:
     }
 
 
-def confirm_msg(response_url: str, event: Event, approved: bool):
-    try:
-        response = requests.post(
-            response_url,
-            json={
-                "replace_original": True,
-                "text": (
-                    f"✓ Event created: {event.title} {event.date}"
-                    if approved
-                    else f"✗ Event declined: {event.title} {event.date}"
-                ),
-            },
-        )
-        if response.status_code != 200:
-            logger.error(f"Something went wrong: {response}")
-            return
-        logger.info("Sent decision acknowledgement msg to Slack.")
-    except requests.exceptions.RequestException as e:
-        logger.error(
-            f"An error occured while trying to send decision acknowledgement msg to Slack: {e}"
-        )
-        raise
+def confirm_user_action(slack_response_url: str, event: Event, approved: bool):
+    """
+    Send Slack msg confirming user decision (approve/decline).
+    Replaces original message.
+    """
+
+    payload = (
+        {
+            "replace_original": True,
+            "text": (
+                f"✓ Event created: {event.title} {event.date}"
+                if approved
+                else f"✗ Event declined: {event.title} {event.date}"
+            ),
+        },
+    )
+    post(slack_response_url, payload)
 
 
-def update_msg(response_url: str, msg: str):
-    try:
-        response = requests.post(
-            response_url,
-            json={"replace_original": True, "text": msg},
-        )
-        if response.status_code != 200:
-            logger.error(f"Something went wrong: {response}")
-            return
-        logger.info("Sent update msg to Slack.")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"An error occured while sending update msg to Slack: {e}")
+def send_update_msg(response_url: str, msg: str):
+    """
+    Send Slack progress update message (Slack requires responses within 3 seconds).
+    Replaces original Slack msg.
+    """
+
+    payload = {
+        "replace_original": True,
+        "text": msg,
+    }
+    response = post(response_url, payload)
+    return response
 
 
 def delete_msg():
-    return
+    # TODO: Implement delete Slack msg method
+    pass

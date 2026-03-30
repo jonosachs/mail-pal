@@ -9,3 +9,6 @@ services/tempCodeRunnerFile.py
 sandbox.py
 scratch.py
 dynamo.py
+event.txt
+raw_event.py
+event.json
