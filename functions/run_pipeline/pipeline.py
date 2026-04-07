@@ -18,7 +18,7 @@ def lambda_handler(_event, _context):
         cal = Calendar()
 
         # Accesptable formats for email filter: newer_than:2d, after:2004/04/16
-        email_filter = "newer_than:12d"
+        email_filter = "newer_than:2d"
 
         # Get emails using Gmail api.
         # Omitting the filter argument will get emails from all time
