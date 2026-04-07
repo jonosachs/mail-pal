@@ -12,9 +12,14 @@
     "boto3",
     "requests",
     "pydantic",
+    "slack-sdk"
   ]
 
 [project.optional-dependencies]
 dev = [
   "pytest",
 ]
+
+# Ignore docstring argument checks
+# [tool.ruff.lint]
+# ignore = ["D417"]

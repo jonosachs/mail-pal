@@ -1,8 +1,8 @@
 from urllib.parse import parse_qs
 from services.gcal import Calendar
-from services.slack import confirm_user_action, send_update_msg
 from models.event import Event
 from config import load_secrets
+from services.slack_client import update_msg
 import hmac, hashlib
 import json
 import logging
@@ -14,31 +14,31 @@ logger = logging.getLogger(__name__)
 
 def lambda_handler(event, context):
     """
-    Lamba handler for SlackHandlerFunction
+    SlackHandlerFunction
+    Processes Slack response payload (event)
     """
 
     try:
         # Send immediate processing msg to acknowledge user button click
         # This requires unpacking event to get the respones url.
         payload = unpack_payload(event)
-        response_url = payload["response_url"]
-        send_update_msg(response_url, "Processing request..")
+        ts = payload["message"]["ts"]
+        update_msg(ts=ts, text="Processing request..")
 
         if request_validated(event):
             return handle_user_response(payload=payload)
         else:
-            send_update_msg(
-                response_url, "SlackHandlerFunction: Authentication failed."
-            )
+            update_msg(ts=ts, text="SlackHandlerFunction: Authentication failed.")
             return {"statusCode": 401, "body": "Authentication failed"}
     except Exception as e:
         logger.error(f"Error handling Slack event: {str(e)}")
-        send_update_msg(response_url, f"SlackHandlerFunction: {e}.")
+        # TODO: may fail before ts is defined
+        update_msg(ts=ts, text=f"SlackHandlerFunction: {e}.")
         raise
 
 
 def handle_user_response(payload):
-    response_url = payload["response_url"]
+    ts = payload["message"]["ts"]
     actions = payload["actions"][0]
     action_id = actions["action_id"]
     value = actions["value"]
@@ -49,22 +49,20 @@ def handle_user_response(payload):
     if action_id == "approve":
         gcal = Calendar()
         gcal.create_event(event_obj)
-        confirm_user_action(
-            slack_response_url=response_url, event=event_obj, approved=True
-        )
-        return {
-            "statusCode": 200,
-            "body": "Calender event created successfully",
-        }
+        update_msg(ts=ts, text=f"✓ event created: {event_obj.title} {event_obj.date}")
+        success_msg = "Calender event created successfully"
+        logger.info(success_msg)
+        return {"statusCode": 200, "body": success_msg}
     else:
-        confirm_user_action(
-            slack_response_url=response_url, event=event_obj, approved=False
-        )
-        return {"statusCode": 200, "body": "Calender event denied"}
+        declined_msg = "Calendar event declined"
+        update_msg(ts=ts, text=f"✗ Event declined: {event_obj.title} {event_obj.date}")
+        logger.info(declined_msg)
+        return {"statusCode": 200, "body": declined_msg}
 
 
-def unpack_payload(event: Event) -> dict:
+def unpack_payload(event) -> dict:
     raw_body = event["body"]
+
     decoded = parse_qs(raw_body)
     payload_str = decoded["payload"][0]  # unwraps the list
     return json.loads(payload_str)
