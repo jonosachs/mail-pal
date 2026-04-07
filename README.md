@@ -51,7 +51,9 @@ life-admin/
 │   ├── gmail.py
 │   ├── gcal.py
 │   ├── gemini.py
-│   ├── slack.py
+│   ├── slack.py                  # legacy webhook client (kept for reference)
+│   ├── slack_client.py           # Slack Web API client (send_msg, update_msg, build_slack_msg)
+│   ├── slack_response.py
 │   ├── credentials.py
 │   └── prompt.py
 ├── models/
@@ -60,7 +62,9 @@ life-admin/
     ├── test_gcal.py
     ├── test_gemini.py
     ├── test_gmail.py
-    └── test_slack.py
+    ├── test_slack.py
+    ├── test_slack_client.py
+    └── test_slack_handler.py
 ```
 
 ## Credentials
@@ -76,7 +80,7 @@ Local dev uses a `.env` file. Production secrets are stored in AWS Secrets Manag
 | `GEMINI_API_KEY`       | Gemini API key                                    |
 | `EMAILS`               | Comma-separated attendee emails                   |
 | `MAILBOXES`            | Comma-separated Gmail label names to scan         |
-| `SLACK_WEBHOOK_URL`    | Slack incoming webhook URL                        |
+| `SLACK_BOT_USER_TOKEN` | Slack Bot User OAuth token for Web API calls      |
 | `SLACK_SIGNING_SECRET` | Slack signing secret for request verification     |
 
 ## Setup
