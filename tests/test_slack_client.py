@@ -8,7 +8,6 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-# Run single test: python -m pytest tests/test_slack_client.py -s
 def test_connection():
     client = WebClient()
     api_response = client.api_test()

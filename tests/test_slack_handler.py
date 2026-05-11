@@ -1,4 +1,3 @@
-import pytest
 from functions.slack_handler.handler import lambda_handler
 from tests.mock_slack_event import mock_event
 from datetime import datetime

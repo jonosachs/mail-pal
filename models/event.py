@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict, SkipValidation
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 
 

@@ -2,14 +2,19 @@ from urllib.parse import parse_qs
 from services.gcal import Calendar
 from models.event import Event
 from config import load_secrets
-from services.slack_client import update_msg
-import hmac, hashlib
+from services.slack_client import SlackClient
+import hmac
+import hashlib
 import json
 import logging
 import time
 
-# Initialize the logger
 logger = logging.getLogger(__name__)
+sc = SlackClient()
+
+
+def ok(msg: str = ""):
+    return {"statusCode": 200, "body": msg}
 
 
 def lambda_handler(event, context):
@@ -18,22 +23,25 @@ def lambda_handler(event, context):
     Processes Slack response payload (event)
     """
 
-    try:
-        # Send immediate processing msg to acknowledge user button click
-        # This requires unpacking event to get the respones url.
-        payload = unpack_payload(event)
-        ts = payload["message"]["ts"]
-        update_msg(ts=ts, text="Processing request..")
+    # Validate request was from Slack
+    if not request_validated(event):
+        return {"statusCode": 401, "body": "Authentication failed"}
 
-        if request_validated(event):
-            return handle_user_response(payload=payload)
-        else:
-            update_msg(ts=ts, text="SlackHandlerFunction: Authentication failed.")
-            return {"statusCode": 401, "body": "Authentication failed"}
+    try:
+        # Send ack message to Slacks (required within 3 secs)
+        # Requires unpacking event to get the respones url.
+        payload = unpack_payload(event)
+        response_url = payload["response_url"]
+        sc.ack(response_url)
+
+        # Handle approve/decline instruction from user
+        handle_user_response(payload=payload)
+        ts = payload["message"]["ts"]
+
     except Exception as e:
-        logger.error(f"Error handling Slack event: {str(e)}")
+        logger.exception("⚠️ Error handling Slack event")
         # TODO: may fail before ts is defined
-        update_msg(ts=ts, text=f"SlackHandlerFunction: {e}.")
+        sc.update_msg(ts=ts, text=f"⚠️ SlackHandlerFunction: {e}.")
         raise
 
 
@@ -49,15 +57,19 @@ def handle_user_response(payload):
     if action_id == "approve":
         gcal = Calendar()
         gcal.create_event(event_obj)
-        update_msg(ts=ts, text=f"✓ event created: {event_obj.title} {event_obj.date}")
-        success_msg = "Calender event created successfully"
+        sc.update_msg(
+            ts=ts, text=f"✅ event created: {event_obj.title} {event_obj.date}"
+        )
+        success_msg = "✅ Calender event created successfully"
         logger.info(success_msg)
-        return {"statusCode": 200, "body": success_msg}
+        return ok(success_msg)
     else:
-        declined_msg = "Calendar event declined"
-        update_msg(ts=ts, text=f"✗ Event declined: {event_obj.title} {event_obj.date}")
+        declined_msg = "❌ Calendar event declined"
+        sc.update_msg(
+            ts=ts, text=f"❌ Event declined: {event_obj.title} {event_obj.date}"
+        )
         logger.info(declined_msg)
-        return {"statusCode": 200, "body": declined_msg}
+        return ok(declined_msg)
 
 
 def unpack_payload(event) -> dict:

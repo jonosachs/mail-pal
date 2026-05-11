@@ -11,51 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 class Calendar:
-    def __init__(self):
+    def __init__(self, service=None):
         self.creds = get_credentials()
-        self.secrets = load_secrets()
-        self.service = build("calendar", "v3", credentials=self.creds)
+        self.service = service or build("calendar", "v3", credentials=self.creds)
 
-    def create_event(self, e: Event) -> str:
+    def create_event(self, event: dict) -> str:
+        logger.info("📡 Creating event")
         try:
-            # Get email addresses from env variable
-            EMAILS = self.secrets["EMAILS"].split(",")
-
-            # Event resource
-            # https://developers.google.com/workspace/calendar/api/v3/reference/events#resource
-            event = {
-                "summary": f"[bot] {e.title}",
-                "location": e.location,
-                "description": e.description,
-                "start": {
-                    "dateTime": e.start,
-                    "timeZone": "Australia/Melbourne",
-                },
-                "end": {
-                    "dateTime": e.end,
-                    "timeZone": "Australia/Melbourne",
-                },
-                "attendees": [
-                    {"email": EMAILS[0]},
-                    {"email": EMAILS[1]},
-                ],
-                "reminders": {
-                    "useDefault": True,
-                    # 'overrides': [
-                    #   {'method': 'email', 'minutes': 24 * 60},
-                    #   {'method': 'popup', 'minutes': 10},
-                    # ],
-                },
-                "source": {"url": e.source_url},
-            }
-
-            # Add recurrence tag only if data provided
-            if e.recurrence:
-                event["recurrence"] = e.recurrence
-
-            # events().insert fields:
-            # https://developers.google.com/workspace/calendar/api/v3/reference/events/insert
-
             event = (
                 self.service.events()
                 .insert(calendarId="primary", body=event, sendUpdates="externalOnly")
@@ -63,19 +25,17 @@ class Calendar:
             )
 
             event_id = event["id"]
-            logger.info(f"Created event: {event_id}")
+            logger.info(f"✅ Created event: {event_id}")
             return event_id
 
-        except HttpError as error:
-            logger.error(f"An error occurred while trying to create an event: {error}")
+        except HttpError:
+            logger.exception("⚠️ Error creating event")
             raise
 
-    # Response:
-    # https://developers.google.com/workspace/calendar/api/v3/reference/events#resource-representations
     def get_event(self, event_id) -> dict | None:
         try:
             # Call the Calendar API
-            logger.info("Getting event..")
+            logger.info("📡 Getting event..")
             event = (
                 self.service.events()
                 .get(calendarId="primary", eventId=event_id)
@@ -83,23 +43,19 @@ class Calendar:
             )
 
             if not event:
-                logger.info(f"Event {event_id} not found.")
+                logger.info(f"❌ Event {event_id} not found.")
                 return
 
-            logger.info(f"Retrieved event: {event_id}")
+            logger.info(f"✅ Retrieved event: {event_id}")
             return event
 
-        except HttpError as error:
-            logger.error(f"An error occurred: {error}")
+        except HttpError:
+            logger.exception("Error getting event", extra={"event": event_id})
 
-    # Parameters:
-    # https://developers.google.com/workspace/calendar/api/v3/reference/events/list#parameters
-    # Response:
-    # https://developers.google.com/workspace/calendar/api/v3/reference/events/list#response
     def get_exist_events(self, query: str, max_results: int = 10) -> list[dict] | None:
         try:
             # Call the Calendar API
-            logger.info("Getting events..")
+            logger.info("📡 Getting events..")
             payload = (
                 self.service.events()
                 .list(
@@ -114,14 +70,15 @@ class Calendar:
             events = payload.get("items", [])
 
             if not events:
-                logger.info(f"No events found matching query: {query}.")
+                logger.info(f"❌ No events found matching query: {query}.")
                 return
 
-            logger.info(f"Retrieved {len(events)} events matching query: {query}.")
+            logger.info(f"✅ Retrieved {len(events)} events matching query: {query}.")
             return events
 
-        except HttpError as error:
-            logger.error(f"An error occurred: {error}")
+        except HttpError:
+            logger.exception("⚠️ Error getting existing events")
+            return
 
     def delete_event(self, event_id) -> None:
         try:
@@ -131,8 +88,47 @@ class Calendar:
                 .execute()
             )
 
-            logger.info(f"Successfully deleted event {event_id}")
+            logger.info(f"✅ Successfully deleted event {event_id}")
             return response
 
-        except Exception as e:
-            logger.error(f"An error occured trying to delete event: {e}")
+        except Exception:
+            logger.exception("⚠️ Error deleting event")
+
+
+# Helper methods
+def build_schema(e: Event) -> dict:
+    # Get email addresses from env variable
+    secrets = load_secrets()
+    EMAILS = secrets["EMAILS"].split(",")
+
+    event = {
+        "summary": f"[bot] {e.title}",
+        "location": e.location,
+        "description": e.description,
+        "start": {
+            "dateTime": e.start,
+            "timeZone": "Australia/Melbourne",
+        },
+        "end": {
+            "dateTime": e.end,
+            "timeZone": "Australia/Melbourne",
+        },
+        "attendees": [
+            {"email": EMAILS[0]},
+            {"email": EMAILS[1]},
+        ],
+        "reminders": {
+            "useDefault": True,
+            # 'overrides': [
+            #   {'method': 'email', 'minutes': 24 * 60},
+            #   {'method': 'popup', 'minutes': 10},
+            # ],
+        },
+        "source": {"url": e.source_url},
+    }
+
+    # Add recurrence tag only if data provided
+    if e.recurrence:
+        event["recurrence"] = e.recurrence
+
+    return event

@@ -1,7 +1,7 @@
 from services.gmail import Gmail
 from services.gemini import Gemini
 from services.gcal import Calendar
-from services.slack_client import send_msg, build_slack_msg
+from services.slack_client import build_slack_msg, SlackClient
 from services.db import Declined
 import logging
 
@@ -11,6 +11,7 @@ gmail = Gmail()
 llm = Gemini()
 cal = Calendar()
 db = Declined()
+sc = SlackClient()
 
 
 def lambda_handler(_event, _context):
@@ -27,9 +28,9 @@ def lambda_handler(_event, _context):
         emails = gmail.get_mail(filter=email_filter, max_results=20)
 
         if not emails:
-            abort_msg = "RunPipelineFunction: No emails found, aborting pipeline"
+            abort_msg = "❌ RunPipelineFunction: No emails found, aborting pipeline"
             logger.info(abort_msg)
-            send_msg(text=abort_msg)
+            sc.send_msg(text=abort_msg)
             return
 
         # Get existing and recently declined events to avoid re-creating
@@ -42,28 +43,28 @@ def lambda_handler(_event, _context):
         )
 
         if not llm_response.events:
-            abort_msg = f"RunPipelineFunction: No new events, aborting pipeline. LLM notes: {llm_response.notes}"
+            abort_msg = f"❌ RunPipelineFunction: No new events, aborting pipeline. LLM notes: {llm_response.notes}"
             logger.info(abort_msg)
-            send_msg(text=abort_msg)
+            sc.send_msg(text=abort_msg)
             return
 
         # Build event approval messages and send to Slack
-        logger.info("Sending Slack messages")
+        logger.info("📡 Sending Slack messages")
         sent = 0
 
         for e in llm_response.events:
             slack_msg = build_slack_msg(e)
-            response = send_msg(slack_msg)
+            response = sc.send_msg(slack_msg)
             if response["ok"]:
                 sent += 1
             else:
-                logger.error(f"Failed to extract an event: {response['error']}")
+                logger.error(f"⚠️ Failed to extract an event: {response['error']}")
 
-        logger.info(f"Sent {sent} Slack messages.")
-        return {"statusCode": 200, "body": "Pipeline complete"}
+        logger.info(f"✅ Sent {sent} Slack messages.")
+        return {"statusCode": 200, "body": "✅ Pipeline complete"}
 
     except Exception as e:
-        error = f"Pipeline failed: {e}"
+        error = f"⚠️ Pipeline failed: {e}"
         logger.error(error)
-        send_msg(text=error)
-        return {"statusCode": 500, "body": "Pipeline failed"}
+        sc.send_msg(text=error)
+        return {"statusCode": 500, "body": "⚠️ Pipeline failed"}

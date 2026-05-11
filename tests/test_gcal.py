@@ -1,39 +1,37 @@
-import pytest
-from services.gcal import Calendar
-from models.event import Event
+from services.gcal import Calendar, build_schema
+from tests.mock_event import mock_event
+from unittest.mock import MagicMock
 import logging
 
 logger = logging.getLogger(__name__)
 
+mock_service = MagicMock()
+cal = Calendar(service=mock_service)
 
-# Run single test: python -m pytest tests/test_gcal.py -s
+
+"""
+event = (
+    self.service.events()
+    .insert(calendarId="primary", body=event, sendUpdates="externalOnly")
+    .execute()
+)
+"""
+
+
 def test_create_event():
-    # recurrence field is omitted for single events
-    test_event = Event(
-        id_="18e4f2a1b3c9d001",
-        title="Team Standup",
-        from_="Jane Smith",
-        date="2026-03-25",
-        time="09:00",
-        duration_minutes=30,
-        start="2026-03-25T09:00:00+11:00",
-        end="2026-03-25T09:30:00+11:00",
-        location="Zoom: https://zoom.us/j/123456789",
-        description="Weekly team standup to discuss priorities and blockers.",
-        confidence=0.95,
-        source_url="http://www.gmail.com/",
-    )
+    mock_id = {"id": "event1234"}
+    schema = build_schema(mock_event)
+    events = mock_service.events.return_value
+    events.insert.return_value.execute.return_value = mock_id
 
-    cal = Calendar()
-    event_id = cal.create_event(test_event)
-    retrieved_event = cal.get_event(event_id)
+    # Set attendees to dev only
+    attendees = schema.get("attendees")
+    if not attendees:
+        raise RuntimeError("⚠️ No attendees for event")
 
-    logger.info(retrieved_event)
+    event_id = cal.create_event(schema)
 
-    # Event fields:
-    # https://developers.google.com/workspace/calendar/api/v3/reference/events#resource
-    assert test_event.title in retrieved_event["summary"]
-    assert test_event.start in retrieved_event["start"]["dateTime"]
+    assert "Team Standup" in str(events.insert.call_args.kwargs["body"])
 
-    response = cal.delete_event(event_id)
-    assert response == ""
+    events.insert.assert_called()
+    assert event_id == mock_id["id"]
