@@ -15,8 +15,11 @@ class Calendar:
         self.creds = get_credentials()
         self.service = service or build("calendar", "v3", credentials=self.creds)
 
-    def create_event(self, e: dict) -> str:
+    def create_event(self, event_obj: Event) -> str:
+        e = build_schema(event_obj)
+
         logger.info("📡 Creating event")
+
         try:
             event = (
                 self.service.events()

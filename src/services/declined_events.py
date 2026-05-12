@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-import boto3
 from models.event import Event
 from botocore.exceptions import ClientError
+from decimal import Decimal
+import boto3
 import logging
 import json
-from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 

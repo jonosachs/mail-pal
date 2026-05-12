@@ -58,8 +58,7 @@ def handle_user_response(payload: dict):
 
     if action_id == "approve":
         gcal = Calendar()
-        e = build_schema(event_obj)
-        gcal.create_event(e)
+        gcal.create_event(event_obj)
         sc.update_msg(
             ts=ts, text=f"✅ event created: {event_obj.title} {event_obj.date}"
         )
