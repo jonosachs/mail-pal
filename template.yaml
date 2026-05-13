@@ -35,8 +35,10 @@ Resources:
             Effect: Allow
             Action: secretsmanager:GetSecretValue
             Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:life-admin/secrets-9MlbNy"
-        - DynamoDBWritePolicy:
-            TableName: !Ref DeclinedEventTable
+        - Statement:
+            Effect: Allow
+            Action: dynamodb:PutItem
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Declined"
       Events:
         SlackEvent: # creates the API Gateway
           Type: Api
@@ -56,27 +58,15 @@ Resources:
             Effect: Allow
             Action: secretsmanager:GetSecretValue
             Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:life-admin/secrets-9MlbNy"
-        - DynamoDBReadPolicy:
-            TableName: !Ref DeclinedEventTable
+        - Statement:
+            Effect: Allow
+            Action: dynamodb:Scan
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Declined"
       Events:
         ScheduledRun: # creates the EventBridge rule
           Type: Schedule
           Properties:
             Schedule: cron(0 9 * * ? *)
-
-  DeclinedEventTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: Declined
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id 
-          KeyType: HASH
-      TimeToLiveSpecification:
-        AttributeName: expiry
-        Enabled: true
 
 Outputs:
   SlackHandlerUrl:

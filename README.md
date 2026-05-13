@@ -101,40 +101,4 @@ sam build
 sam deploy
 ```
 
-If `sam deploy` hangs and only function code has changed, update the two Lambda functions directly:
-
-```bash
-sam build
-
-SLACK_FUNCTION=$(aws cloudformation describe-stack-resource \
-  --stack-name life-admin \
-  --logical-resource-id SlackHandlerFunction \
-  --region ap-southeast-2 \
-  --query 'StackResourceDetail.PhysicalResourceId' \
-  --output text)
-
-RUN_PIPELINE_FUNCTION=$(aws cloudformation describe-stack-resource \
-  --stack-name life-admin \
-  --logical-resource-id RunPipelineFunction \
-  --region ap-southeast-2 \
-  --query 'StackResourceDetail.PhysicalResourceId' \
-  --output text)
-
-cd .aws-sam/build/SlackHandlerFunction
-zip -qr /tmp/slack-handler.zip .
-
-cd ../RunPipelineFunction
-zip -qr /tmp/run-pipeline.zip .
-
-aws lambda update-function-code \
-  --function-name "$SLACK_FUNCTION" \
-  --zip-file fileb:///tmp/slack-handler.zip \
-  --region ap-southeast-2
-
-aws lambda update-function-code \
-  --function-name "$RUN_PIPELINE_FUNCTION" \
-  --zip-file fileb:///tmp/run-pipeline.zip \
-  --region ap-southeast-2
-```
-
-Direct function upload does not update infrastructure, environment variables, IAM permissions, API Gateway, EventBridge, or the Lambda layer.
+If `sam deploy` hangs, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
