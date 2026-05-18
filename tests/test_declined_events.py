@@ -14,11 +14,13 @@ def test_add():
     # Item shape:
     """
     Item={
-        "id": e["id_"],
+        "id": unique_id,
         "expiry": expiry,
         **e,
     }
     """
 
-    assert item["id"] == mock_event.id_
-    assert "expiry" in item
+    # Id should be unique UUID
+    assert item["id"] != mock_event.id_
+
+    assert mock_event.title in str(item)

@@ -47,8 +47,7 @@ class Gemini(LlmBase):
                     f"✅ Extracted {len(events)} events from {len(emails)} emails."
                 )
             else:
-                logger.info(f"❌ No events found in {len(emails)} emails.")
-                logger.info(f"📝 Gemini notes: {events_obj.notes}")
+                logger.info(f"❌ No valid events found in {len(emails)} emails.")
 
             # Events object includes gemini notes (useful to explain why events were dropped)
             return events_obj

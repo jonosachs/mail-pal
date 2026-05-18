@@ -3,6 +3,7 @@ from models.event import Event
 from botocore.exceptions import ClientError
 from decimal import Decimal
 import boto3
+import uuid
 import logging
 import json
 
@@ -27,9 +28,11 @@ class Declined:
         logger.info("📡 Adding entry to db")
 
         try:
+            unique_id = str(uuid.uuid4())
+
             self.table.put_item(
                 Item={
-                    "id": e["id_"],
+                    "id": unique_id,
                     "expiry": expiry,
                     **e,
                 }
