@@ -76,11 +76,12 @@ class DeclinedEvents:
                 err.response["Error"]["Message"],
             )
 
-    def delete(self, id):
+    def delete(self, id) -> dict | None:
         logger.info("📡 Deleting db entry")
 
         try:
-            self.table.delete_item(Key={"id": id})
+            response = self.table.delete_item(Key={"id": id})
+            return response
         except ClientError as err:
             logger.error(
                 "⚠️ Couldn't delete event %s from table %s. Here's why: %s: %s",

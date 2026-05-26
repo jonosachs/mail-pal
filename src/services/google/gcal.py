@@ -11,7 +11,6 @@ import os
 
 logger = logging.getLogger(__name__)
 load_dotenv(override=True)
-APP_ENV = os.getenv("APP_ENV")
 
 
 class Calendar:
@@ -112,6 +111,11 @@ def build_schema(e: Event) -> dict:
     secrets = load_secrets()
     EMAILS = secrets["EMAILS"].split(",")
 
+    attendees = [{"email": EMAILS[0]}]
+    APP_ENV = os.getenv("APP_ENV")
+    if APP_ENV == "prod":
+        attendees.append({"email": EMAILS[1]})
+
     event = {
         "summary": f"[bot] {e.title}",
         "location": e.location,
@@ -124,10 +128,7 @@ def build_schema(e: Event) -> dict:
             "dateTime": e.end,
             "timeZone": "Australia/Melbourne",
         },
-        "attendees": [
-            {"email": EMAILS[0]},
-            # {"email": EMAILS[1]},
-        ],
+        "attendees": attendees,
         "reminders": {
             "useDefault": True,
             # 'overrides': [
@@ -141,8 +142,5 @@ def build_schema(e: Event) -> dict:
     # Add recurrence tag only if data provided
     if e.recurrence:
         event["recurrence"] = e.recurrence
-
-    if APP_ENV == "prod":
-        event.attendees.append({"email": EMAILS[1]})
 
     return event

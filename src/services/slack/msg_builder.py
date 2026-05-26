@@ -14,7 +14,6 @@ def build_declined_msg(msg: str, event: Event) -> list:
                 {
                     "type": "button",
                     "text": {"type": "plain_text", "text": "Undo/Approve"},
-                    "style": "primary",
                     "action_id": "undo",
                     "value": event.model_dump_json(),
                 }

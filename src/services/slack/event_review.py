@@ -56,5 +56,7 @@ def undo_declined_event(payload):
 
     # Delete database entry
     db_id = payload.event.db_id
-    db.delete(db_id)
-    logger.info(f"Event {db_id} deleted from database")
+    deleted = db.delete(db_id)
+
+    if deleted:
+        logger.info(f"Event {db_id} deleted from database")

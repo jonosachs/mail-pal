@@ -78,3 +78,6 @@ SAM DynamoDB Policy Templates
 **scan** - to retrieve all entries
 - https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html
 - https://docs.aws.amazon.com/boto3/latest/reference/services/dynamodb/client/scan.html
+
+**delete**
+- https://docs.aws.amazon.com/boto3/latest/reference/services/dynamodb/table/delete_item.html
