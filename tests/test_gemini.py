@@ -1,5 +1,5 @@
 import pytest
-from services.gemini import Gemini
+from services.google.gemini import Gemini
 from tests.mock_email import mock_email, mock_followup
 
 

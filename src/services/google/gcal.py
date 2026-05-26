@@ -1,6 +1,6 @@
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from services.credentials import get_credentials
+from services.google.credentials import get_credentials
 from config import load_secrets
 from models.event import Event
 import logging
@@ -55,7 +55,11 @@ class Calendar:
         except HttpError:
             logger.exception("Error getting event", extra={"event": event_id})
 
-    def get_exist_events(self, query: str, max_results: int = 10) -> list[dict] | None:
+    def get_existing_events(self, query=None, max_results=None) -> list[dict] | None:
+
+        query = query or "[bot]"  # Existing bot created events are prepended with [bot]
+        max_results = max_results or 10
+
         try:
             # Call the Calendar API
             logger.info("📡 Getting events..")

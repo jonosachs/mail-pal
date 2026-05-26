@@ -1,4 +1,4 @@
-from services.gcal import Calendar
+from services.google.gcal import Calendar
 from tests.mock_event import mock_event
 from unittest.mock import MagicMock
 import logging

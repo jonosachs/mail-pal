@@ -17,3 +17,4 @@ tests/reports/
 .ruff_cache/
 .claude/
 
+TODO.md

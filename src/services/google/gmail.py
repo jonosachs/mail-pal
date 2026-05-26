@@ -1,6 +1,6 @@
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from services.credentials import get_credentials
+from services.google.credentials import get_credentials
 from config import load_secrets
 from bs4 import BeautifulSoup
 import base64
@@ -46,8 +46,12 @@ class Gmail:
         except HttpError as error:
             raise HttpError(f"⚠️ Error getting Gmail messages: {error})") from error
 
-    def get_mail(self, filter: str | None = None, max_results: int = 10) -> list:
+    def get_mail(self, filter=None, max_results=None) -> list:
         """Get emails using Gmail API."""
+
+        # Acceptable formats for email filter: newer_than:2d, after:2004/04/16
+        filter = filter or "newer_than:2d"
+        max_results = max_results or 10
 
         # Get comma separated mailboxes to include in search
         # Gmail uses OR operator to split search criteria

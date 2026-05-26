@@ -1,7 +1,8 @@
 import pytest
 from slack_sdk import WebClient
 from unittest.mock import MagicMock
-from services.slack_client import SlackClient, build_slack_msg
+from services.slack.client import SlackClient
+from services.slack.msg_builder import build_review_msg
 from tests.mock_event import mock_event
 import logging
 import json
@@ -22,7 +23,7 @@ def test_send_msg():
     mock_client = MagicMock()
     sc = SlackClient(client=mock_client)
     e = mock_event
-    msg_schema = build_slack_msg(event=e)
+    msg_schema = build_review_msg(event=e)
     response = sc.send_msg(msg_schema)
     msg_response = json.loads(response["message"]["blocks"][1]["elements"][0]["value"])
 

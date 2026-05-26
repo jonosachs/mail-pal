@@ -10,7 +10,7 @@ import json
 logger = logging.getLogger(__name__)
 
 
-class Declined:
+class DeclinedEvents:
     """Persist declined events to AWS Dynamodb"""
 
     def __init__(self, resource=None, table=None):
@@ -37,6 +37,7 @@ class Declined:
                     **e,
                 }
             )
+            return unique_id
         except ClientError as err:
             logger.error(
                 "⚠️ Couldn't add event %s to table %s. Here's why: %s: %s",

@@ -1,4 +1,4 @@
-from functions.run_pipeline.pipeline import lambda_handler as run_pipeline
+from functions.run_pipeline.pipeline import pipeline_handler as run_pipeline
 import logging
 
 # Set level INFO, DEBUG etc. for local environment

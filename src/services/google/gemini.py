@@ -1,7 +1,7 @@
 from google import genai
 from models.event import Events
-from services.llm_base import LlmBase
-from services.prompt import prompt
+from services.llm.llm_base import LlmBase
+from services.llm.prompt import prompt
 from config import load_secrets
 from google.genai import errors
 import logging
@@ -14,13 +14,14 @@ class Gemini(LlmBase):
         self.secrets = load_secrets()
         self.client = client or genai.Client(api_key=self.secrets["GEMINI_API_KEY"])
 
-    def extract_events(self, exist_events, declined_events, emails) -> Events:
+    def extract_events(self, emails, existing_events, declined_events) -> Events:
+
         logger.info("📡 Contacting Gemini API..")
 
         prompt_contents = f"""
         {prompt}
         Existing Events:
-        {exist_events}
+        {existing_events}
         Recently Declined Events:
         {declined_events}
         Emails:

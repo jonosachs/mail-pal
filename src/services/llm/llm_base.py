@@ -5,4 +5,6 @@ from models.event import Event
 
 class LlmBase(ABC):
     @abstractmethod
-    def extract_events(self, exist_events, declined_events, emails) -> List[Event]: ...
+    def extract_events(
+        self, emails, existing_events, declined_events
+    ) -> List[Event]: ...

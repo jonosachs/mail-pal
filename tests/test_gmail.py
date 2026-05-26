@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock
-from services.gmail import Gmail
+from services.google.gmail import Gmail
 from mock_email import mock_gmail_payload
 import logging
 
