@@ -7,7 +7,7 @@ d = DeclinedEvents(table=mock_table)
 
 
 def test_add():
-    unique_id = d.add(event=mock_event)
+    db_id = d.add(event=mock_event)
     mock_table.put_item.assert_called_once()
     item = mock_table.put_item.call_args.kwargs["Item"]
 
@@ -20,7 +20,7 @@ def test_add():
     }
     """
 
-    # Id should be unique UUID (not event/email id)
-    assert item["id"] == unique_id
+    # Id should the db UUID key (not event/email id)
+    assert item["id"] == db_id
 
     assert mock_event.title in str(item)

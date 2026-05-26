@@ -62,6 +62,20 @@ class DeclinedEvents:
                 err.response["Error"]["Message"],
             )
 
+    def get(self, id):
+        logger.info("📡 Fetching db entry")
+        try:
+            response = self.table.get_item(Key={"id": id})
+            return response
+        except ClientError as err:
+            logger.error(
+                "⚠️ Couldn't get event %s from table %s. Here's why: %s: %s",
+                id,
+                self.table,
+                err.response["Error"]["Code"],
+                err.response["Error"]["Message"],
+            )
+
     def delete(self, id):
         logger.info("📡 Deleting db entry")
 

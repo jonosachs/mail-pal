@@ -4,6 +4,7 @@ from typing import List, Optional
 
 class Event(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
+    db_id: Optional[str] = Field(default=None, description="User supplied database id")
     id_: str = Field(description="Gmail email id")
     title: str = Field(description="Brief event title")
     from_: str = Field(

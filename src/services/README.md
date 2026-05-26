@@ -33,17 +33,24 @@ response shape:
 
 ## Slack
 
-Section-block:
-- https://docs.slack.dev/reference/block-kit/blocks/section-block/
-
-**postMessage**:
+**chat.postMessage**:
 arguments:
 - https://docs.slack.dev/reference/methods/chat.postMessage/#arguments
 response:
 - https://docs.slack.dev/reference/methods/chat.postMessage/#response
 
+**chat.update**
+response shape:
+- https://docs.slack.dev/reference/methods/chat.update#response
+
 Verify incoming requests from Slack
 - https://docs.slack.dev/authentication/verifying-requests-from-slack
+
+Section-block:
+- https://docs.slack.dev/reference/block-kit/blocks/section-block/
+
+Interactive block_actions payload
+- https://docs.slack.dev/reference/interaction-payloads/block_actions-payload#examples
 
 ## AWS Serverless Application Model (AWS SAM)
 
@@ -63,10 +70,10 @@ SAM DynamoDB Policy Templates
 - https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html#serverless-policy-template-table
 
 **put_item**
-- https://docs.aws.amazon.com/boto3/latest/reference/services/dynamodb/client/put_item.html#
+- https://docs.aws.amazon.com/boto3/latest/reference/services/dynamodb/table/put_item.html
 
 **get_item**
-- https://docs.aws.amazon.com/boto3/latest/reference/services/dynamodb/client/get_item.html
+- https://docs.aws.amazon.com/boto3/latest/reference/services/dynamodb/table/get_item.html#DynamoDB.Table.get_item
 
 **scan** - to retrieve all entries
 - https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html

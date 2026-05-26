@@ -17,7 +17,7 @@ def test_connection():
     api_response = client.api_test()
 
 
-# Creates a mock message in slack (need to delete manually)
+# Creates a mock message in Slack (need to delete manually)
 @pytest.mark.skip(reason="Uses actual service. Need to implement with MagicMock")
 def test_send_msg():
     mock_client = MagicMock()

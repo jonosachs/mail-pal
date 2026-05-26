@@ -1,7 +1,6 @@
 from config import load_secrets
 from services.slack.msg_builder import (
     build_static_msg,
-    build_declined_msg,
     build_review_msg,
 )
 
@@ -11,7 +10,6 @@ from requests import HTTPError
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-from enum import Enum
 import logging
 
 logger = logging.getLogger(__name__)
@@ -58,7 +56,6 @@ class SlackClient:
             raise
 
     def update_msg_by_ts(self, ts: str, slack_schema: list):
-        """Replace previous msg. Requires timestamp"""
         try:
             response = self.client.chat_update(
                 channel=self.channel, ts=ts, blocks=slack_schema, text="fallback"
@@ -74,16 +71,16 @@ class SlackClient:
 
     def send_events_for_approval(self, events: list):
         logger.info("📡 Sending events for approval via Slack")
-        sent = 0
+        num_sent = 0
         for e in events:
             slack_msg = build_review_msg(e)
             response = self.send_new_msg(slack_msg)
             if response["ok"]:
-                sent += 1
+                num_sent += 1
             else:
                 logger.error(f"⚠️ Failed to extract an event: {response['error']}")
 
-        logger.info(f"✅ Sent {sent} Slack messages.")
+        logger.info(f"✅ Sent {num_sent} Slack messages.")
 
     def send_abort_msg(self, msg):
         slack_msg = build_static_msg(msg)
