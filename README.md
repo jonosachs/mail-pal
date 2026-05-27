@@ -93,6 +93,17 @@ Local dev uses a `.env` file. Production secrets are stored in AWS Secrets Manag
 | `SLACK_BOT_USER_TOKEN` | Slack Bot User OAuth token for Web API calls      |
 | `SLACK_SIGNING_SECRET` | Slack signing secret for request verification     |
 
+## Requirements
+
+- Python 3.13 for deployed Lambda runtime; project metadata supports Python 3.9+
+- AWS CLI configured with credentials for the target account
+- AWS SAM CLI for build and deploy
+- Google Cloud OAuth credentials with Gmail and Calendar API access
+- Gemini API key
+- Slack app with bot token, signing secret, and interactivity enabled
+- AWS Secrets Manager secret named `life-admin/secrets`
+- DynamoDB table named `Declined`
+
 ## Setup
 
 ```bash
