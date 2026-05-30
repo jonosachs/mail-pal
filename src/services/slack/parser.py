@@ -1,4 +1,3 @@
-from config import load_secrets
 from models.slack_action_payload import SlackActionPayload
 from models.event import Event
 
@@ -7,7 +6,6 @@ import json
 import logging
 
 logger = logging.getLogger(__name__)
-secrets = load_secrets()
 
 
 # Parse Slack event as dict and return SlackResponse object

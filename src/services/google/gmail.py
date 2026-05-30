@@ -7,11 +7,11 @@ import base64
 import logging
 
 logger = logging.getLogger(__name__)
+secrets = load_secrets()
 
 
 class Gmail:
     def __init__(self, service=None):
-        self.secrets = load_secrets()
         self.creds = get_credentials()
         self.service = service or build("gmail", "v1", credentials=self.creds)
 
@@ -46,20 +46,11 @@ class Gmail:
         except HttpError as error:
             raise HttpError(f"⚠️ Error getting Gmail messages: {error})") from error
 
-    def get_mail(self, filter=None, max_results=None) -> list:
+    def get_mail(self, query=None, max_results=None) -> list:
         """Get emails using Gmail API."""
 
-        # Acceptable formats for email filter: newer_than:2d, after:2004/04/16
-        filter = filter or "newer_than:2d"
+        query = query or build_default_query()
         max_results = max_results or 10
-
-        # Get comma separated mailboxes to include in search
-        # Gmail uses OR operator to split search criteria
-        mailboxes = self.secrets["MAILBOXES"].split(",")
-        query = " OR ".join([f"in:{m}" for m in mailboxes])
-        # Add custom filter arguments if provided
-        if filter:
-            query += f" {filter}"
 
         # Gmail uses 2-step process for msg retrieval
         # 1- .list() returns msg ids matching search query
@@ -94,6 +85,19 @@ class Gmail:
 
 
 # Helper methods
+def build_default_query():
+    addresses = secrets["EXTRACT_EVENTS_FROM_EMAILS"].split(",")
+
+    query = "newer_than:2d"
+    query += " AND "
+    # Gmail uses {query1 query2} notation to match one or more criteria
+    query += "{"
+    query += " ".join([f"from:{a}" for a in addresses])
+    query += "}"
+
+    return query
+
+
 def extract_body(payload):
     body_raw = payload.get("body", {}).get("data")
 

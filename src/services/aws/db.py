@@ -53,11 +53,14 @@ class DeclinedEvents:
             )
 
     def get_all(self):
-        logger.info("📡 Getting db entries")
+        logger.info("📡 Getting events from db")
 
         try:
             response = self.table.scan()
             items = response.get("Items", [])
+
+            logger.info(f"✅ Found {len(items)} events in db")
+
             return items
         except ClientError as err:
             logger.error(

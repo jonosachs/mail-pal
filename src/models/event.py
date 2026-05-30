@@ -6,7 +6,9 @@ class Event(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     db_id: Optional[str] = Field(default=None, description="User supplied database id")
     id_: str = Field(description="Gmail email id")
-    title: str = Field(description="Brief event title")
+    title: str = Field(
+        description="Brief event title, don't prepend with '[bot]' identifier, this is handled for you"
+    )
     from_: str = Field(
         description="Sender of the email from which the event is generated (use names over addresses)"
     )
@@ -26,8 +28,8 @@ class Event(BaseModel):
     location: Optional[str] = Field(
         default=None, description="Physical or virtual location"
     )
-    description: Optional[str] = Field(
-        default=None, description="Additional context, keep it under 500 chars"
+    description: str = Field(
+        description="Additional context from source email, keep it under 500 chars"
     )
     confidence: float = Field(description="0-1 confidence score")
     source_url: Optional[str] = Field(
