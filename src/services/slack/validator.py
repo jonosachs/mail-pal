@@ -1,12 +1,19 @@
+from config import load_secrets
+from dataclasses import dataclass
 import hmac
 import hashlib
 import time
-from config import load_secrets
 
 secrets = load_secrets()
 
 
-def is_valid(slack_event) -> bool:
+@dataclass
+class ValidatorOutcome:
+    is_valid: bool
+    reason: str | None = None
+
+
+def validate(slack_event) -> ValidatorOutcome:
     """
     Verify requests from Slack
         Template: https://docs.slack.dev/authentication/verifying-requests-from-slack/
@@ -21,7 +28,7 @@ def is_valid(slack_event) -> bool:
 
     if abs(time.time() - int(timestamp)) > 60 * 60 * 12:
         # Ignore if timestamp is more than 12 hours from local time.
-        return False
+        return ValidatorOutcome(False, "Invalid timestamp")
 
     # Concatenate the version number, the timestamp, and the request body together
     sig_basestring = "v0:" + timestamp + ":" + raw_body
@@ -36,4 +43,10 @@ def is_valid(slack_event) -> bool:
 
     # Compare the resulting signature to the header on the request.
     slack_signature = slack_event["headers"]["X-Slack-Signature"]
-    return hmac.compare_digest(my_signature, slack_signature)
+
+    match = hmac.compare_digest(my_signature, slack_signature)
+
+    if not match:
+        return ValidatorOutcome(False, "Signatures did not match")
+
+    return ValidatorOutcome(True)

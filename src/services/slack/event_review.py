@@ -1,6 +1,11 @@
 from services.aws.db import DeclinedEvents
 from services.slack.client import SlackClient
-from services.slack.msg_builder import build_static_msg, build_declined_msg
+from services.slack.msg_builder import (
+    build_delete_original_payload,
+    build_response_payload,
+    build_static_blocks,
+    build_declined_blocks,
+)
 from services.google.gcal import Calendar
 
 from enum import Enum
@@ -34,9 +39,10 @@ def approve_event(payload):
     # Create calendar event
     gcal.create_event(payload.event)
 
-    # Send Slack confirmation msg
-    slack_msg = build_static_msg(f"✅ Event approved: {payload.event_preview}")
-    slack.update_msg_by_ts(payload.ts, slack_msg)
+    blocks = build_static_blocks(f"✅ Event approved: {payload.event_preview}")
+    slack_payload = build_delete_original_payload("Event approved", blocks)
+
+    slack.send_response(payload.response_url, slack_payload)
 
 
 def decline_event(payload):
@@ -45,10 +51,11 @@ def decline_event(payload):
     payload.event.db_id = event_id
 
     # Send Slack confirmation msg (includes undo button)
-    slack_msg = build_declined_msg(
+    blocks = build_declined_blocks(
         f"❌ Event declined: {payload.event_preview}", payload.event
     )
-    slack.update_msg_by_ts(payload.ts, slack_msg)
+    slack_payload = build_delete_original_payload("Event declined", blocks)
+    slack.send_response(payload.response_url, slack_payload)
 
 
 def undo_declined_event(payload):
@@ -59,4 +66,4 @@ def undo_declined_event(payload):
     deleted = db.delete(event_id)
 
     if deleted:
-        logger.info(f"Event {event_id} deleted from database")
+        logger.info(f"✅ Event {event_id} deleted from database")

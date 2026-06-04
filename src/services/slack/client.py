@@ -1,7 +1,7 @@
 from config import load_secrets
 from services.slack.msg_builder import (
-    build_static_msg,
-    build_review_msg,
+    build_static_blocks,
+    build_review_blocks,
 )
 
 import requests
@@ -21,67 +21,47 @@ class SlackClient:
         self.client = client or WebClient(token=secrets["SLACK_BOT_USER_TOKEN"])
         self.channel = channel or "C0AMF67KHM4"
 
-    def send_new_msg(self, slack_schema: list):
+    def send_new_msg(self, msg_blocks: list):
         try:
             response = self.client.chat_postMessage(
-                channel=self.channel, text="fallback", blocks=slack_schema
+                channel=self.channel, text="New Message", blocks=msg_blocks
             )
             return response
         except SlackApiError as e:
             logger.error(
                 "⚠️ Error sending Slack message: %s. Provided schema: %s",
                 e,
-                slack_schema,
+                msg_blocks,
             )
             raise
 
-    def send_ack(self, response_url):
-        """
-        Send Slack progress update message (Slack requires responses within 3 seconds).
-        Uses reply url instead of timestamp
-        Replaces original Slack msg.
-        """
-
-        payload = {
-            "replace_original": True,
-            "text": "Processing..",
-        }
-
+    # By default, a message published via response_url will be sent as an ephemeral message:
+    # https://docs.slack.dev/interactivity/handling-user-interaction/#acknowledgment_response
+    def send_response(self, response_url, slack_payload: dict):
         try:
-            response = requests.post(url=response_url, json=payload, timeout=5)
-            logger.info("✅ Successfully sent ack msg to Slack")
+            response = requests.post(url=response_url, json=slack_payload, timeout=5)
+            response.raise_for_status()
+            logger.info("✅ Response sent to Slack")
             return response
         except HTTPError:
-            logger.exception("⚠️ Error sending ack message to Slack")
-            raise
-
-    def update_msg_by_ts(self, ts: str, slack_schema: list):
-        try:
-            response = self.client.chat_update(
-                channel=self.channel, ts=ts, blocks=slack_schema, text="fallback"
-            )
-            return response
-        except SlackApiError as e:
-            logger.error(
-                "⚠️ Error updating Slack message: %s. Provided blocks: %s",
-                e,
-                slack_schema,
-            )
+            logger.exception("⚠️ Error sending response to Slack")
             raise
 
     def send_events_for_approval(self, events: list):
         logger.info("📡 Sending events for approval via Slack")
         num_sent = 0
         for e in events:
-            slack_msg = build_review_msg(e)
-            response = self.send_new_msg(slack_msg)
+            msg_blocks = build_review_blocks(e)
+            response = self.send_new_msg(msg_blocks)
             if response["ok"]:
                 num_sent += 1
             else:
-                logger.error(f"⚠️ Failed to extract an event: {response['error']}")
+                logger.error(
+                    f"⚠️ Failed to extract an event: {response.get('error', '')}"
+                )
 
         logger.info(f"✅ Sent {num_sent} Slack messages.")
 
     def send_abort_msg(self, msg):
-        slack_msg = build_static_msg(msg)
+        slack_msg = build_static_blocks(msg)
         self.send_new_msg(slack_msg)

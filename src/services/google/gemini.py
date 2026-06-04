@@ -11,8 +11,11 @@ logger = logging.getLogger(__name__)
 
 class Gemini(LlmBase):
     def __init__(self, client=None):
-        self.secrets = load_secrets()
-        self.client = client or genai.Client(api_key=self.secrets["GEMINI_API_KEY"])
+        if client:
+            self.client = client
+        else:
+            self.secrets = load_secrets()
+            self.client = client or genai.Client(api_key=self.secrets["GEMINI_API_KEY"])
 
     def extract_events(self, emails, existing_events, declined_events) -> Events:
 

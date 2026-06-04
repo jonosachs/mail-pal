@@ -1,19 +1,28 @@
 import pytest
 from functions.slack.handler import lambda_handler
-from tests.mock_slack_event import mock_event
-from datetime import datetime
+from services.slack.validator import ValidatorOutcome
+from tests.mock_slack_event import mock_slack_event
+from copy import deepcopy
 import logging
-import json
 
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
-@pytest.mark.skip(reason="Uses actual service. Need to implement with MagicMock")
-def test_slack_handler():
-    me = mock_event
-    ts = str(int(datetime.now().timestamp()))
-    print(ts)
-    me["headers"]["X-Slack-Request-Timestamp"] = ts
-    response = lambda_handler(event=mock_event, context=None)
-    rjon = json.dumps(response)
-    assert "200" in rjon
+@pytest.mark.skip(reason="wip")
+def test_slack_handler(monkeypatch):
+    # Mock Slack event with 'declined' user action
+    me = deepcopy(mock_slack_event)
+
+    # Set current timestamp to avoid expiry trigger during validation
+    monkeypatch.setattr(
+        "functions.slack.handler.validate",
+        lambda event: ValidatorOutcome(True),
+    )
+
+    # We expect: Validation -> Ack message -> Ephemeral 'declined' acknowledgment msg
+    response = lambda_handler(event=me, context=None)
+
+    logger.info(f"{response['statusCode']} {response['body']}")
+
+    assert response["statusCode"] == 200

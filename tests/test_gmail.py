@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+from googleapiclient.discovery import build
 from services.google.gmail import Gmail
 from mock_email import mock_gmail_payload
 import logging
@@ -39,29 +40,27 @@ self.service.users()
 
 
 def test_get_mail():
-    # Setup mock service and response
-    mock_id = "id1234"
-    query = "newer_than:2d"
-    mock_service = MagicMock()
-    mock_response = {"messages": [{"id": mock_id}]}
-
     # Setup method chaining to match gmail api
+    mock_service = MagicMock()
     messages = mock_service.users.return_value.messages.return_value
-    list_call = messages.list.return_value
-    list_call.execute.return_value = mock_response
-    get_call = messages.get.return_value
-    get_call.execute.return_value = mock_gmail_payload
+
+    # .list call chain: users->messages->list->execute
+    mock_id = "id1234"
+    mock_response = {"messages": [{"id": mock_id}]}
+    messages.list.return_value.execute.return_value = mock_response
+
+    # .get call chain: users->messages->get->execute
+    messages.get.return_value.execute.return_value = mock_gmail_payload
 
     # Run routine with mock service
     gmail = Gmail(service=mock_service)
-    response = gmail.get_mail(filter=query, max_results=1)[0]
+    query = "newer_than:2d"
+    max_results = 1
+    response = gmail.get_mail(query, max_results)[0]
 
     # Check service was called
-    messages.list.assert_called()
-
-    # Check query was passed to list() method
-    search_query = messages.list.call_args.kwargs["q"]
-    assert query in search_query
+    messages.list.assert_called_once_with(userId="me", q=query, maxResults=max_results)
+    messages.get.assert_called_once_with(userId="me", id=mock_id, format="full")
 
     # Check message id was passed to get() method
     message_id = messages.get.call_args.kwargs["id"]

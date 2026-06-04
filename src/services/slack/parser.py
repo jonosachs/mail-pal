@@ -18,6 +18,8 @@ def parse_slack_event(slack_event) -> SlackActionPayload:
     # Obtain response details
     response_url = payload["response_url"]
     ts = payload["message"]["ts"]
+    channel_id = payload["channel"]["id"]
+    user_id = payload["user"]["id"]
 
     # Obtain event details
     action_id = payload["actions"][0]["action_id"]
@@ -28,6 +30,8 @@ def parse_slack_event(slack_event) -> SlackActionPayload:
     return SlackActionPayload(
         ts=ts,
         response_url=response_url,
+        channel_id=channel_id,
+        user_id=user_id,
         event=event,
         event_preview=event_preview,
         action=action_id,

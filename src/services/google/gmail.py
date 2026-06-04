@@ -12,8 +12,11 @@ secrets = load_secrets()
 
 class Gmail:
     def __init__(self, service=None):
-        self.creds = get_credentials()
-        self.service = service or build("gmail", "v1", credentials=self.creds)
+        if service:
+            self.service = service
+        else:
+            self.creds = get_credentials()
+            self.service = build("gmail", "v1", credentials=self.creds)
 
     def get_msg_ids(self, query, max_results) -> dict:
         try:

@@ -15,11 +15,14 @@ load_dotenv(override=True)
 
 class Calendar:
     def __init__(self, service=None):
-        self.creds = get_credentials()
-        self.service = service or build("calendar", "v3", credentials=self.creds)
+        if service:
+            self.service = service
+        else:
+            self.creds = get_credentials()
+            self.service = build("calendar", "v3", credentials=self.creds)
 
     def create_event(self, event_obj: Event) -> str:
-        e = build_schema(event_obj)
+        e = build_event_schema(event_obj)
 
         logger.info("📡 Creating event")
 
@@ -63,7 +66,6 @@ class Calendar:
             logger.exception("⚠️ Error getting event", extra={"event": event_id})
 
     def get_existing_events(self, query=None, max_results=None) -> list[dict] | None:
-
         # query param (q) accepts free text search terms
         # Existing bot created events are prepended with [bot]
         query = query or "[bot]"
@@ -112,11 +114,10 @@ class Calendar:
             logger.exception("⚠️ Error deleting event")
 
 
-# Helper methods
-def build_schema(e: Event) -> dict:
+def build_event_schema(e: Event) -> dict:
     # Get email addresses from env variable
     secrets = load_secrets()
-    EMAILS = secrets["EMAILS"].split(",")
+    EMAILS = secrets["SEND_EVENTS_TO_EMAILS"].split(",")
 
     # First email is dev
     attendees = [{"email": EMAILS[0]}]

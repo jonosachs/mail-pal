@@ -43,6 +43,12 @@ response:
 response shape:
 - https://docs.slack.dev/reference/methods/chat.update#response
 
+**chat.postEphemeral**
+- https://docs.slack.dev/reference/methods/chat.postEphemeral
+
+**chat.delete**
+- https://docs.slack.dev/reference/methods/chat.delete
+
 Verify incoming requests from Slack
 - https://docs.slack.dev/authentication/verifying-requests-from-slack
 

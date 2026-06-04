@@ -1,13 +1,29 @@
 from models.event import Event
 
 
-def build_static_msg(text: str) -> list:
-    return [{"type": "section", "text": {"type": "mrkdwn", "text": text}}]
+def build_response_payload(preview_text, blocks):
+    return {"text": preview_text, "blocks": blocks}
 
 
-def build_declined_msg(msg: str, event: Event) -> list:
+def build_delete_original_payload(preview_text, blocks):
+    return {"delete_original": True, "text": preview_text, "blocks": blocks}
+
+
+def build_static_blocks(text: str) -> list:
     return [
-        {"type": "section", "text": {"type": "mrkdwn", "text": msg}},
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": text},
+        }
+    ]
+
+
+def build_declined_blocks(text: str, event: Event) -> list:
+    return [
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": text},
+        },
         {
             "type": "actions",
             "elements": [
@@ -22,7 +38,7 @@ def build_declined_msg(msg: str, event: Event) -> list:
     ]
 
 
-def build_review_msg(event: Event) -> list:
+def build_review_blocks(event: Event) -> list:
     """Build structured Slack actions message."""
 
     return [

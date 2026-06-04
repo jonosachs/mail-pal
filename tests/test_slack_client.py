@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.skip(reason="Uses actual service. Need to implement with MagicMock")
+# @pytest.mark.skip(reason="Uses actual service. Need to implement with MagicMock")
 def test_connection():
     client = WebClient()
     api_response = client.api_test()
