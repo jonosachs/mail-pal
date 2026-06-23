@@ -1,4 +1,4 @@
-# Mail PAL
+# Mail PAL 📬
 
 Automated AI mail filter tool that extracts important events and action items from your inbox and creates calendar events for each, with one-click approval via Slack. Built to save time and reduce message fatigue.
 
