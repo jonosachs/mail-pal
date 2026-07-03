@@ -7,7 +7,7 @@ prompt = f"""
   Today is {local_dt}.
   
   Your job is to filter the provided emails and find any important events, or actions items, and return calendar entries for each.
-  You will also be provided with a list of existing events that you've extracted before, as well as a list of recently proposed events that were declined by the user. Do not re-create these events.
+  You will also be provided with a list of existing events that you've extracted before, as well as a list of recently proposed events. Do not re-create these events.
 
   Only include events that are important or actually require a response.
   Return a JSON array per the schema provided. 

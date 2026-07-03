@@ -42,8 +42,7 @@ class DeclinedEvents:
             )
             return unique_id
         except ClientError as err:
-            # DB expections do not raise as these errors are not terminal
-            # and can be picked up in the logs
+            # DB expections must raise as persistence is necessary to avoid replicating previous events
             logger.error(
                 "⚠️ Couldn't add event %s to table %s. Here's why: %s: %s",
                 event,
@@ -51,6 +50,7 @@ class DeclinedEvents:
                 err.response["Error"]["Code"],
                 err.response["Error"]["Message"],
             )
+            raise
 
     def get_all(self):
         logger.info("📡 Getting events from db")
