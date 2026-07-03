@@ -128,6 +128,9 @@ def build_event_schema(e: Event) -> dict:
         for email in EMAILS[1:]:
             attendees.append({"email": email})
 
+    # Get event's source email url from the email id
+    source_url = f"https://mail.google.com/mail/u/0/#inbox/{e.id_}"
+
     # Google Calendar event schema
     event = {
         "summary": f"[bot] {e.title}",
@@ -149,7 +152,7 @@ def build_event_schema(e: Event) -> dict:
             #   {'method': 'popup', 'minutes': 10},
             # ],
         },
-        "source": {"url": e.source_url},
+        "source": {"url": source_url},
     }
 
     # Add recurrence tag only if data provided

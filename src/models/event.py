@@ -4,7 +4,9 @@ from typing import List, Optional
 
 class Event(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    db_id: Optional[str] = Field(default=None, description="User supplied database id")
+    db_id: Optional[str] = Field(
+        default=None, description="User supplied database id, ignore"
+    )
     id_: str = Field(description="Gmail email id")
     title: str = Field(
         description="Brief event title, don't prepend with '[bot]' identifier, this is handled for you"
@@ -33,7 +35,7 @@ class Event(BaseModel):
     )
     confidence: float = Field(description="0-1 confidence score")
     source_url: Optional[str] = Field(
-        default=None, description="https://mail.google.com/mail/u/0/#inbox/{msg_id}"
+        default=None, description="User supplied url, ignore"
     )
 
 
