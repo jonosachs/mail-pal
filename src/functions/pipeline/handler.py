@@ -31,15 +31,18 @@ def lambda_handler(_event, _context):
 
         # Get existing and recently proposed events to avoid re-creating
         existing_events = cal.get_existing_events()
-        previous_events = db.get_all()
+        recent_events = db.get_all()
 
-        # Extract possible events using llm
-        payload = llm.extract_events(emails, existing_events, previous_events)
+        # Extract event candidates from emails using LLM
+        payload = llm.extract_events(emails, existing_events, recent_events)
 
         if not payload.events:
             reasons = payload.notes
             slack.send_abort_msg(f"🛑 No new events: {reasons}")
             return ok("🛑 No new events")
+
+        # Send proposed events to Slack for user approval
+        slack.send_events_for_approval(payload.events)
 
         # Write proposed events to db
         for event in payload.events:
@@ -49,9 +52,6 @@ def lambda_handler(_event, _context):
             event.db_id = event_id
 
             print(f"✅ Event {event_id} written to db")
-
-        # Send proposed events to Slack for user approval
-        slack.send_events_for_approval(payload.events)
 
         return ok("✅ Pipeline complete")
 

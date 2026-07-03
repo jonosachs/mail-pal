@@ -87,7 +87,9 @@ Resources:
             Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:life-admin/secrets-9MlbNy"
         - Statement:
             Effect: Allow
-            Action: dynamodb:Scan
+            Action: 
+              - dynamodb:Scan
+              - dynamodb:PutItem
             Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Declined"
       Events:
         ScheduledRun: # creates the EventBridge rule
