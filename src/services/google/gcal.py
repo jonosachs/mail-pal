@@ -7,7 +7,6 @@ import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
-import os
 
 logger = logging.getLogger(__name__)
 load_dotenv(override=True)
