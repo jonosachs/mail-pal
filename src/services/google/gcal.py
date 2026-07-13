@@ -21,8 +21,12 @@ class Calendar:
             self.creds = get_credentials()
             self.service = build("calendar", "v3", credentials=self.creds)
 
-    def create_event(self, event_obj: Event) -> str:
-        e = build_event_schema(event_obj)
+    def create_event(self, event_obj: Event, attendees: list | None = None) -> str:
+        if attendees is None:
+            secrets = load_secrets()
+            attendees = secrets["EVENT_ATTENDEES_EMAILS"].split(",")
+
+        e = build_event_schema(event_obj, attendees)
 
         logger.info("📡 Creating event")
 
@@ -114,20 +118,7 @@ class Calendar:
             logger.exception("⚠️ Error deleting event")
 
 
-def build_event_schema(e: Event) -> dict:
-    # Get email addresses from env variable
-    secrets = load_secrets()
-    emails = secrets["SEND_EVENTS_TO_EMAILS"].split(",")
-
-    # First email is dev
-    attendees = [{"email": emails[0]}]
-
-    # Add remaining recipients if in production
-    APP_ENV = os.getenv("APP_ENV")
-    if APP_ENV == "prod":
-        for email in emails[1:]:
-            attendees.append({"email": email})
-
+def build_event_schema(e: Event, attendees: list | None = None) -> dict:
     # Google Calendar event schema
     event = {
         "summary": f"[bot] {e.title}",

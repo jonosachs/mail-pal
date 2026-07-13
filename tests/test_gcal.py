@@ -23,7 +23,8 @@ def test_create_event():
     events = mock_service.events.return_value
     events.insert.return_value.execute.return_value = mock_id
 
-    event_id = cal.create_event(mock_event)
+    mock_attendees = ["mock@email.com"]
+    event_id = cal.create_event(mock_event, mock_attendees)
 
     assert "Team Standup" in str(events.insert.call_args.kwargs["body"])
 
