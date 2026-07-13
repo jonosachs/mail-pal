@@ -7,8 +7,6 @@ import os
 
 logger = logging.getLogger(__name__)
 
-lambda_client = boto3.client("lambda")
-
 
 def lambda_handler(event, context):
     """
@@ -27,6 +25,7 @@ def lambda_handler(event, context):
     # Call asynchronous Lambda to do heavy work outside routine
     # Allows return of 200 OK within Slack required 3-sec timeframe
     worker_function_name = os.environ["SLACK_WORKER_FUNCTION_NAME"]
+    lambda_client = boto3.client("lambda")
     lambda_client.invoke(
         FunctionName=worker_function_name,
         InvocationType="Event",

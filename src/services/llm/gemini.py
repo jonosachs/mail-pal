@@ -27,7 +27,7 @@ class Gemini(LlmBase):
         logger.info("📡 Contacting Gemini API..")
 
         prompt_contents = f"""
-        {build_prompt}
+        {build_prompt()}
         Existing Events:
         {existing_events}
         Recently Seen Events:

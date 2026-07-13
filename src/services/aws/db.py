@@ -15,8 +15,11 @@ class EventsStore:
     """Store seen events in database"""
 
     def __init__(self, resource=None, table=None):
-        self.db = resource or boto3.resource("dynamodb")
-        self.table = table or self.db.Table(os.environ["TABLE_NAME"])
+        if table is None:
+            self.db = resource or boto3.resource("dynamodb")
+            self.table = self.db.Table(os.environ["TABLE_NAME"])
+        else:
+            self.table = table
 
     def add(self, event: Event):
         # Event -> json -> dict

@@ -9,17 +9,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-gmail = Gmail()
-llm = Gemini()
-cal = Calendar()
-db = EventsStore()
-slack = SlackClient()
-
 
 def lambda_handler(_event, _context):
     """
     RunPipelineFunction
     """
+
+    gmail = Gmail()
+    llm = Gemini()
+    cal = Calendar()
+    db = EventsStore()
+    slack = SlackClient()
 
     try:
         # Get recent emails to search for possible events

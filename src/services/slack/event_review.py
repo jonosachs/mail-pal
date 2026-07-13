@@ -1,4 +1,3 @@
-from services.aws.db import EventsStore
 from services.slack.client import SlackClient
 from services.slack.msg_builder import (
     build_delete_original_payload,
@@ -6,15 +5,21 @@ from services.slack.msg_builder import (
     build_declined_blocks,
 )
 from services.google.gcal import Calendar
-
+from functools import cache
 from enum import Enum
 import logging
 
 logger = logging.getLogger(__name__)
 
-db = EventsStore()
-slack = SlackClient()
-gcal = Calendar()
+
+@cache
+def get_slack() -> SlackClient:
+    return SlackClient()
+
+
+@cache
+def get_gcal() -> Calendar:
+    return Calendar()
 
 
 class Action(str, Enum):
@@ -35,12 +40,13 @@ def handle_user_action(payload):
 
 
 def approve_event(payload):
+    gcal = get_gcal()
     # Create calendar event
     gcal.create_event(payload.event)
 
     blocks = build_static_blocks(f"✅ Event approved: {payload.event_preview}")
     slack_payload = build_delete_original_payload("Event approved", blocks)
-
+    slack = get_slack()
     slack.send_response(payload.response_url, slack_payload)
 
 
@@ -50,6 +56,7 @@ def decline_event(payload):
         f"❌ Event declined: {payload.event_preview}", payload.event
     )
     slack_payload = build_delete_original_payload("Event declined", blocks)
+    slack = get_slack()
     slack.send_response(payload.response_url, slack_payload)
 
 
