@@ -1,23 +1,25 @@
 [project]
-  name = "life-admin"
-  version = "0.1.0"
-  requires-python = ">=3.9"
-  dependencies = [
-    "google-api-python-client", 
-    "google-auth-httplib2", 
-    "google-auth-oauthlib",
-    "python-dotenv",
-    "google-genai",
-    "beautifulsoup4",
-    "boto3",
-    "requests",
-    "pydantic",
-    "slack-sdk"
-  ]
+name = "event-miner"
+version = "0.1.0"
+requires-python = ">=3.13"
 
-[project.optional-dependencies]
+dependencies = [
+  "beautifulsoup4",
+  "google-api-python-client", 
+  "google-auth-httplib2", 
+  "google-genai",
+  "pydantic",
+  "python-dotenv",
+  "requests",
+  "slack-sdk"
+]
+
+[dependency-groups]
 dev = [
+  "boto3",
+  "google-auth-oauthlib",
   "pytest",
+  "ruff"
 ]
 
 # Ignore docstring argument checks
@@ -25,4 +27,14 @@ dev = [
 # ignore = ["D417"]
 
 [tool.pytest.ini_options]
-  pythonpath = ["src"]
+pythonpath = ["src"]
+addopts = "-m 'not integration'"
+markers = [
+ "integration: hits live external services (Slack, Google, Gemini). Not run by default.",
+]
+
+[tool.pyright]
+extraPaths = ["src"]
+
+[tool.ruff]
+src = ["src"]
