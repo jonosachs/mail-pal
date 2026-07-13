@@ -1,9 +1,9 @@
 from unittest.mock import MagicMock
-from services.aws.db import DeclinedEvents
+from services.aws.db import EventsStore
 from tests.mock_event import mock_event
 
 mock_table = MagicMock()
-d = DeclinedEvents(table=mock_table)
+d = EventsStore(table=mock_table)
 
 
 def test_add():
