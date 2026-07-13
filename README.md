@@ -1,4 +1,4 @@
-# Mail PAL 📬
+# Event Miner 📅
 
 Automated AI mail filter tool that extracts important events and action items from your inbox and creates calendar events for each, with one-click approval via Slack. Built to save time and reduce message fatigue.
 
@@ -35,7 +35,7 @@ Secrets are stored in AWS Secrets Manager for production and a `.env` file for l
 ## Code
 
 ```
-life-admin/
+event-miner/
 ├── pyproject.toml                # dependencies
 ├── template.yaml                 # AWS SAM deployment config
 ├── samconfig.toml                # SAM deploy settings

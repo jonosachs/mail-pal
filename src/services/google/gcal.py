@@ -117,15 +117,15 @@ class Calendar:
 def build_event_schema(e: Event) -> dict:
     # Get email addresses from env variable
     secrets = load_secrets()
-    EMAILS = secrets["SEND_EVENTS_TO_EMAILS"].split(",")
+    emails = secrets["SEND_EVENTS_TO_EMAILS"].split(",")
 
     # First email is dev
-    attendees = [{"email": EMAILS[0]}]
+    attendees = [{"email": emails[0]}]
 
     # Add remaining recipients if in production
     APP_ENV = os.getenv("APP_ENV")
     if APP_ENV == "prod":
-        for email in EMAILS[1:]:
+        for email in emails[1:]:
             attendees.append({"email": email})
 
     # Google Calendar event schema
