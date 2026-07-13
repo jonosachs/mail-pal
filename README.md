@@ -32,56 +32,6 @@ Slack (button click)
 
 Secrets are stored in AWS Secrets Manager for production and a `.env` file for local development.
 
-## Code
-
-```
-event-miner/
-├── pyproject.toml                # dependencies
-├── template.yaml                 # AWS SAM deployment config
-├── samconfig.toml                # SAM deploy settings
-├── layers/
-│   └── dependencies/
-│       └── requirements.txt      # shared Lambda dependencies
-├── src/                          # application source code packaged into Lambda
-│   ├── main.py                   # local entry point
-│   ├── config.py                 # loads secrets from .env or Secrets Manager
-│   ├── functions/
-│   │   ├── pipeline/
-│   │   │   └── handler.py        # EventBridge-triggered Lambda
-│   │   └── slack/
-│   │       ├── handler.py        # API Gateway-triggered Lambda (validate + ack)
-│   │       └── worker.py         # async Lambda that fulfils the user decision
-│   ├── models/
-│   │   ├── event.py
-│   │   └── slack_action_payload.py
-│   └── services/
-│       ├── aws/
-│       │   └── db.py             # DynamoDB access
-│       ├── google/
-│       │   ├── credentials.py
-│       │   ├── gcal.py
-│       │   ├── gmail.py
-│       │   └── google_quickstart.py  # one-off OAuth refresh-token helper
-│       ├── llm/
-│       │   ├── gemini.py         # Gemini event extraction
-│       │   ├── llm_base.py       # LLM abstract base class
-│       │   └── prompt.py
-│       ├── slack/
-│       │   ├── client.py         # Slack Web API client
-│       │   ├── event_review.py   # approve/decline workflow
-│       │   ├── msg_builder.py    # Slack Block Kit payloads
-│       │   ├── parser.py         # Slack payload parsing
-│       │   └── validator.py      # Slack request verification
-│       └── http_responses.py
-└── tests/
-    ├── test_db.py
-    ├── test_gcal.py
-    ├── test_gemini.py
-    ├── test_gmail.py
-    ├── test_slack_client.py
-    └── test_slack_handler.py
-```
-
 ## Credentials
 
 Local dev uses a `.env` file. Production secrets are stored in AWS Secrets Manager under `life-admin/secrets`.
@@ -101,33 +51,54 @@ Local dev uses a `.env` file. Production secrets are stored in AWS Secrets Manag
 
 ## Requirements
 
-- Python 3.13 for deployed Lambda runtime; project metadata supports Python 3.9+
+- [uv](https://docs.astral.sh/uv/) — manages the virtualenv, the lockfile and Python itself
+- Python 3.13 (installed by uv; pinned in `.python-version` to match the Lambda runtime)
 - AWS CLI configured with credentials for the target account
 - AWS SAM CLI for build and deploy
 - Google Cloud OAuth credentials with Gmail and Calendar API access
 - Gemini API key
 - Slack app with bot token, signing secret, and interactivity enabled
-- AWS Secrets Manager secret named `life-admin/secrets`
-- DynamoDB table named `Declined`
+- AWS Secrets Manager secret named `life-admin/secrets` (override with the `SecretName` template parameter)
+
+The DynamoDB table is created by the stack — no manual setup needed.
 
 ## Setup
 
 ```bash
-pip install -e .
+make install          # create .venv from uv.lock
 ```
 
-### Testing
+Populate `.env` with the secrets listed above for local runs.
 
-```bash
-pip install -e ".[dev]"
-PYTHONPATH=src pytest
-```
+### Commands
+
+| Command                 | Description                                              |
+| ----------------------- | -------------------------------------------------------- |
+| `make install`          | Create/refresh the local virtualenv from `uv.lock`       |
+| `make run`              | Run the pipeline locally against live Gmail/Gemini/Slack |
+| `make test`             | Run unit tests (integration tests deselected)            |
+| `make test-integration` | Run tests that hit live Slack, Google and Gemini         |
+| `make lint`             | Ruff lint and format check                               |
+| `make format`           | Apply Ruff formatting                                    |
+| `make validate`         | Lint `template.yaml` with cfn-lint                       |
+| `make deploy`           | Validate, build and deploy via SAM                       |
+| `make deps`             | Regenerate `uv.lock` and the layer's `requirements.txt`  |
+
+### Dependencies
+
+`pyproject.toml` is the only file to edit by hand. After changing it, run `make deps` to regenerate
+`uv.lock` and `layers/dependencies/requirements.txt`, then commit both. Runtime dependencies ship in
+the Lambda layer; the `dev` group (pytest, ruff, cfn-lint, boto3) does not.
+
+### CI
+
+`.github/workflows/ci.yml` runs lint, template validation and unit tests on every push to `main` and
+on pull requests. Integration tests are excluded — they need live credentials.
 
 ### Deploy
 
 ```bash
-sam build
-sam deploy
+make deploy
 ```
 
 If `sam deploy` hangs, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
