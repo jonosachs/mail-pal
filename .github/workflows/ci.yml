@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branchers: [main]
+    branches: [main]
   pull_request:
 
 
@@ -28,4 +28,7 @@ jobs:
 
       - name: Validate template
         run: uv run cfn-lint template.yaml
+
+      - name: Test
+        run: uv run pytest
 
