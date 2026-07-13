@@ -2,6 +2,11 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
+Parameters:
+  SecretName:
+    Type: String
+    Default: life-admin/secrets
+
 Globals:
   Function:
     Runtime: python3.13
@@ -9,11 +14,29 @@ Globals:
     Environment:
       Variables:
         APP_ENV: prod
-        AWS_SECRETS_MAN: life-admin/secrets
+        AWS_SECRETS_MAN: !Ref SecretName
         REGION: ap-southeast-2
         AWS_LAMBDA_LOG_LEVEL: INFO
+        TABLE_NAME: !Ref EventsTable
 
 Resources:
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: EventsStore
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiry
+        Enabled: true
+
   DependenciesLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -38,7 +61,7 @@ Resources:
         - Statement:
             Effect: Allow
             Action: secretsmanager:GetSecretValue
-            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:life-admin/secrets-9MlbNy"
+            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretName}-*"
         - Statement:
             Effect: Allow
             Action: lambda:InvokeFunction 
@@ -63,13 +86,13 @@ Resources:
         - Statement:
             Effect: Allow
             Action: secretsmanager:GetSecretValue
-            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:life-admin/secrets-9MlbNy"
+            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretName}-*"
         - Statement:
             Effect: Allow
             Action: 
               - dynamodb:PutItem
               - dynamodb:DeleteItem
-            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Declined"
+            Resource: !GetAtt EventsTable.Arn 
 
 
 
@@ -84,13 +107,13 @@ Resources:
         - Statement:
             Effect: Allow
             Action: secretsmanager:GetSecretValue
-            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:life-admin/secrets-9MlbNy"
+            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretName}-*"
         - Statement:
             Effect: Allow
             Action: 
               - dynamodb:Scan
               - dynamodb:PutItem
-            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Declined"
+            Resource: !GetAtt EventsTable.Arn 
       Events:
         ScheduledRun: # creates the EventBridge rule
           Type: Schedule

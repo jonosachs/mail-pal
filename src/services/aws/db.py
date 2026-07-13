@@ -6,6 +6,7 @@ import boto3
 import uuid
 import logging
 import json
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +16,7 @@ class EventsStore:
 
     def __init__(self, resource=None, table=None):
         self.db = resource or boto3.resource("dynamodb")
-        # TODO: Change table name in AWS
-        self.table = table or self.db.Table("Declined")
+        self.table = table or self.db.Table(os.environ["TABLE_NAME"])
 
     def add(self, event: Event):
         # Event -> json -> dict
