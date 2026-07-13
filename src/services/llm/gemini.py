@@ -23,15 +23,15 @@ class Gemini(LlmBase):
                 http_options=types.HttpOptions(timeout=90_000),
             )
 
-    def extract_events(self, emails, existing_events, recent_events) -> Events:
+    def extract_events(self, emails, existing_events, seen_events) -> Events | None:
         logger.info("📡 Contacting Gemini API..")
 
         prompt_contents = f"""
         {prompt}
         Existing Events:
         {existing_events}
-        Recently Created Events:
-        {recent_events}
+        Recently Seen Events:
+        {seen_events}
         Emails:
         {emails}
         """

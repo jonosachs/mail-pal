@@ -10,11 +10,12 @@ import json
 logger = logging.getLogger(__name__)
 
 
-class DeclinedEvents:
-    """Store declined events in database"""
+class EventsStore:
+    """Store seen events in database"""
 
     def __init__(self, resource=None, table=None):
         self.db = resource or boto3.resource("dynamodb")
+        # TODO: Change table name in AWS
         self.table = table or self.db.Table("Declined")
 
     def add(self, event: Event):

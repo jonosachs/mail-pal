@@ -5,7 +5,7 @@ from typing import List, Optional
 class Event(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     db_id: Optional[str] = Field(
-        default=None, description="User supplied database id, ignore"
+        default=None, description="User supplied database id, agents should ignore"
     )
     id_: str = Field(description="Gmail email id")
     title: str = Field(
@@ -35,7 +35,7 @@ class Event(BaseModel):
     )
     confidence: float = Field(description="0-1 confidence score")
     source_url: Optional[str] = Field(
-        default=None, description="User supplied url, ignore"
+        default=None, description="User supplied url, agents should ignore"
     )
 
 

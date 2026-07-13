@@ -1,4 +1,4 @@
-from services.aws.db import DeclinedEvents
+from services.aws.db import EventsStore
 from services.slack.client import SlackClient
 from services.slack.msg_builder import (
     build_delete_original_payload,
@@ -12,7 +12,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-db = DeclinedEvents()
+db = EventsStore()
 slack = SlackClient()
 gcal = Calendar()
 

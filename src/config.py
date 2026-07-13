@@ -33,9 +33,9 @@ def load_secrets():
 
     if not _secrets:
         # AWS_LAMBDA_FUNCTION_NAME is set by AWS on Lambda functions at runtime
-        isLambda = os.getenv("AWS_LAMBDA_FUNCTION_NAME")
+        is_lambda = os.getenv("AWS_LAMBDA_FUNCTION_NAME")
 
-        if isLambda:
+        if is_lambda:
             _secrets = get_secrets_fromAWS()
         else:
             _secrets = get_secrets_locally()
