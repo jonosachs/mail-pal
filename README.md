@@ -43,7 +43,7 @@ Local dev uses a `.env` file. Production secrets are stored in AWS Secrets Manag
 | `GOOGLE_REFRESH_TOKEN`      | Obtained once via `src/services/google/google_quickstart.py` |
 | `GEMINI_API_KEY`            | Gemini API key                                              |
 | `EXTRACT_EVENTS_FROM_EMAILS`| Comma-separated Gmail addresses to scan for events          |
-| `SEND_EVENTS_TO_EMAILS`     | Comma-separated attendee emails for created events          |
+| `EVENT_ATTENDEES_EMAILS`    | Comma-separated attendee emails for created events          |
 | `USER_SPECIFIC_PROMPT`      | Extra prompt context personalising event extraction         |
 | `SLACK_BOT_USER_TOKEN`      | Slack Bot User OAuth token for Web API calls                |
 | `SLACK_SIGNING_SECRET`      | Slack signing secret for request verification               |
