@@ -1,6 +1,6 @@
 # Event Miner 📅
 
-Automated AI mail filter tool that extracts important events and action items from your inbox and creates calendar events for each, with one-click approval via Slack. Built to save time and reduce message fatigue.
+Automated AI mail filter tool that mines your inbox for important events daily and creates calendar events for each, with one-click approval via Slack. 
 
 ## How it works
 
