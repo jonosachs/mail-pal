@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class SlackClient:
     def __init__(self, client=None, channel=None):
-        self.client = client or self.build_client
+        self.client = client or self.build_client()
         self.channel = channel or "C0AMF67KHM4"
 
     def build_client(self):
