@@ -22,7 +22,7 @@ class SlackClient:
 
     def build_client(self):
         secrets = load_secrets()
-        client = WebClient(token=secrets["SLACK_BOT_USER_TOKEN"])
+        client = WebClient(token=secrets.slack_bot_user_token)
         return client
 
     def send_new_msg(self, msg_blocks: list):

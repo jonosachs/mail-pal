@@ -23,7 +23,7 @@ class Calendar:
     def create_event(self, event_obj: Event, attendees: list | None = None) -> str:
         if attendees is None:
             secrets = load_secrets()
-            attendees = secrets["EVENT_ATTENDEES_EMAILS"].split(",")
+            attendees = secrets.event_attendees_emails.split(",")
 
         e = build_event_schema(event_obj, attendees)
 

@@ -19,7 +19,7 @@ class Gemini(LlmBase):
         else:
             self.secrets = load_secrets()
             self.client = client or genai.Client(
-                api_key=self.secrets["GEMINI_API_KEY"],
+                api_key=self.secrets.gemini_api_key,
                 http_options=types.HttpOptions(timeout=90_000),
             )
 

@@ -89,7 +89,7 @@ class Gmail:
 # Helper methods
 def build_default_query():
     secrets = load_secrets()
-    addresses = secrets["EXTRACT_EVENTS_FROM_EMAILS"].split(",")
+    addresses = secrets.extract_events_from_emails.split(",")
 
     query = "newer_than:7d"
     query += " AND "

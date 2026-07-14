@@ -9,9 +9,9 @@ def get_credentials():
 
     credentials = Credentials(
         token=None,
-        refresh_token=secrets["GOOGLE_REFRESH_TOKEN"],
-        client_id=secrets["GOOGLE_CLIENT_ID"],
-        client_secret=secrets["GOOGLE_CLIENT_SECRET"],
+        refresh_token=secrets.google_refresh_token,
+        client_id=secrets.google_client_id,
+        client_secret=secrets.google_client_secret,
         token_uri="https://oauth2.googleapis.com/token",
     )
 

@@ -25,7 +25,7 @@ def build_prompt() -> str:
     Return JSON only, no other text.
 
     When deciding which events to extract, the following user-specified filters should also be considered:
-    {secrets["USER_SPECIFIC_PROMPT"]}
+    {secrets.user_specific_prompt}
     """
 
     return prompt
